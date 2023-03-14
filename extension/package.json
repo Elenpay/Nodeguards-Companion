@@ -1,0 +1,23 @@
+{
+  "name": "react-rust-chrome-extension",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack",
+    "serve": "webpack serve",
+    "release": "NODE_ENV=production yarn run build"
+  },
+  "devDependencies": {
+    "@types/chrome": "^0.0.124",
+    "@wasm-tool/wasm-pack-plugin": "^1.3.1",
+    "@webpack-cli/serve": "^2.0.1",
+    "copy-webpack-plugin": "^6.2.0",
+    "signer": "../signer/pkg",
+    "ts-loader": "^8.0.4",
+    "typescript": "^4.0.3",
+    "webpack": "^4.44.2",
+    "webpack-cli": "^4.10.0",
+    "webpack-dev-server": "^4.11.1"
+  }
+}

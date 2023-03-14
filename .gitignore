@@ -1,0 +1,10 @@
+# JS
+node_modules/
+dist/
+yarn-error.log
+
+# Rust
+target/
+
+# Others
+.DS_Store
