@@ -5,13 +5,13 @@ setup:
 	brew install llvm
 
 build-wasm:
-	cd signer && cargo build --target wasm32-unknown-unknown
+	cd extension && cargo build --target wasm32-unknown-unknown
 
 build-signer:
-	cd signer && wasm-pack build
+	cd extension && wasm-pack build
 
 build-extension: build-signer
-	cd extension && yarn run build
+	cd extension && yarn add ./pkg --check-files && yarn run build
 
 serve-extension:
 	cd extension && yarn run serve

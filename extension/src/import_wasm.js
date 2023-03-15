@@ -1,3 +1,3 @@
 export function import_wasm() {
-    return import("signer");
+    return import("extension");
 }

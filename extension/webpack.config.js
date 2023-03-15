@@ -8,7 +8,7 @@ module.exports = {
     popup: "./src/popup.ts"
   },
   output: {
-    path: path.resolve(__dirname, "dist/")
+    path: path.resolve(__dirname, "dist/"),
   },
   module: {
     rules: [
