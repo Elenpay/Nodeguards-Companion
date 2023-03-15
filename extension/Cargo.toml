@@ -12,6 +12,7 @@ anyhow = "1.0.69"
 signer = { path = "../signer" }
 wasm-bindgen = { version="0.2.84" }
 yew = { version = "0.20.0", features = ["csr"] }
+yew-router = "0.17.0"
 
 [dependencies.web-sys]
 version = "0.3.6"
@@ -23,5 +24,6 @@ features = [
   "Window",
   "Clipboard",
   "ClipboardEvent",
-  "DataTransfer"
+  "DataTransfer",
+  "Storage"
 ]

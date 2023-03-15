@@ -1,17 +1,20 @@
+pub mod components;
+pub mod features;
+pub mod utils;
+pub mod redirect;
+pub mod switch;
+
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
-pub mod features;
-
-use features::password::InputPassword;
-use features::import_seed::ImportSeed;
+use yew_router::prelude::*;
+use switch::{switch, Route};
 
 #[function_component]
 fn App() -> Html {
     html! {
-        <>
-            <ImportSeed />
-            <InputPassword button_label="Sign"/>
-        </> 
+        <BrowserRouter>
+            <Switch<Route> render={switch} /> 
+        </BrowserRouter> 
     }
 }
 

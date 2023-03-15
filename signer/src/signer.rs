@@ -71,10 +71,10 @@ fn sign_psbt(mut psbt: PartiallySignedTransaction, xprv: ExtendedPrivKey) -> Res
 
 pub fn decode_psbt_and_sign(psbt_64: &str) {
     // let wallet = Wallet::from_mnemonic_str("social mango annual basic work brain economy one safe physical junk other toy valid load cook napkin maple runway island oil fan legend stem");
-    let wallet = Wallet::from_mnemonic_str("solar goat auto bachelor chronic input twin depth fork scale divorce fury mushroom column image sauce car public artist announce treat spend jacket physical");
+    let wallet = Wallet::from_mnemonic_str("wallet 1", "solar goat auto bachelor chronic input twin depth fork scale divorce fury mushroom column image sauce car public artist announce treat spend jacket physical");
     let psbt = PartiallySignedTransaction::from_str(&psbt_64).unwrap();
 
-    let signed_psbt = sign_psbt(psbt, wallet.xprv).unwrap();
+    let signed_psbt = sign_psbt(psbt, wallet.xprv.unwrap()).unwrap();
     
     println!("{}", general_purpose::STANDARD.encode(&serialize(&signed_psbt)));
 }
