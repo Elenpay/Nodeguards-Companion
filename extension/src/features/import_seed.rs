@@ -1,28 +1,28 @@
+use wasm_bindgen::JsCast;
 use yew::prelude::*;
-use yew_hooks::prelude::*;
+use web_sys::ClipboardEvent;
 
-#[function_component]
-pub fn ImportSeed() -> Html {
-    let mnemonic = use_state(|| String::new());
-    let clipboard = use_clipboard();
-    let mnemonic_value= (*mnemonic).clone();
-
+#[function_component(ImportSeed)]
+pub fn import_seed() -> Html {
+    let mnemonic = use_state(|| Vec::new());
+    let mut mnemonic_value= (*mnemonic).clone();
+    
     let onpaste = {
-        Callback::from(move |_: Event| {
-            clipboard.read_text();
-            let text = (*clipboard.text).clone();
-            
-            if text.is_some() {
-                mnemonic.set(text.unwrap());
-            }
+        Callback::from(move |e: Event| {
+            let clipboard_event = e.dyn_into::<ClipboardEvent>().ok();
+            let clipboard = clipboard_event.and_then(|e| e.clipboard_data());
+            let _ = clipboard
+                .and_then(|c| c.get_data("text/plain").ok())
+                .map(|t| t.split_whitespace().map(|w| w.to_string()).collect::<Vec<String>>())
+                .map(|v| mnemonic.set(v));
         })
     };
 
+    mnemonic_value.resize(24, "".to_string());
     html! {
         <ol {onpaste}>
-            {"v1"}
             {
-                mnemonic_value.to_owned().split(" ").zip(0..24).map(|(word, index)| {
+                mnemonic_value.to_owned().iter().enumerate().map(|(index, word)| {
                     html!{
                         <li>
                             <input key={index} value={word.to_string()}/>

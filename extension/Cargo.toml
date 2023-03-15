@@ -12,15 +12,16 @@ anyhow = "1.0.69"
 signer = { path = "../signer" }
 wasm-bindgen = { version="0.2.84" }
 yew = { version = "0.20.0", features = ["csr"] }
-gloo-events = "0.1.2"
-yew-hooks = "0.2.0"
 
 [dependencies.web-sys]
-version = "0.3"
+version = "0.3.6"
 features = [
-  'Document',
-  'Element',
-  'HtmlElement',
-  'Node',
-  'Window'
+  "Document",
+  "Element",
+  "HtmlElement",
+  "Node",
+  "Window",
+  "Clipboard",
+  "ClipboardEvent",
+  "DataTransfer"
 ]
