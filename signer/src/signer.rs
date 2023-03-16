@@ -9,7 +9,7 @@ use bitcoin::{EcdsaSighashType, PublicKey, EcdsaSig};
 use bitcoin::secp256k1::{Secp256k1, Message};
 use bitcoin::util::bip32::ExtendedPrivKey;
 use bitcoin::util::psbt::PartiallySignedTransaction;
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, anyhow};
 
 
 use crate::wallet::Wallet;
@@ -34,7 +34,7 @@ fn sign_psbt(mut psbt: PartiallySignedTransaction, xprv: ExtendedPrivKey) -> Res
 
     for (index, input) in psbt.inputs.iter_mut().enumerate() {
         let witness_script = input.witness_script.as_ref().context("Missing witness script")?;
-        
+
         let mut sighash_cache = SighashCache::new(&psbt.unsigned_tx);
         let amount = input.witness_utxo.as_ref().context("Witness utxo not found")?.value;
         let sighash = sighash_cache.segwit_signature_hash(
@@ -54,15 +54,15 @@ fn sign_psbt(mut psbt: PartiallySignedTransaction, xprv: ExtendedPrivKey) -> Res
         }
         
         if input_keypairs.len() == 0 {
-            panic!("No private keys to sign this psbt");
+            return Err(anyhow!("No private keys to sign this psbt"));
         }
 
         for keypair in input_keypairs {
-            let message = &Message::from_slice(&sighash).unwrap();
+            let message = &Message::from_slice(&sighash)?;
             let signature = secp.sign_ecdsa(message, &keypair.secret_key());
             input.partial_sigs.insert(PublicKey::new(keypair.public_key()), set_sighash_type(signature, &input));
 
-            secp.verify_ecdsa(message, &signature, &keypair.public_key()).unwrap();
+            secp.verify_ecdsa(message, &signature, &keypair.public_key())?;
         }
     }
 
