@@ -1,10 +1,11 @@
 use anyhow::Result;
 use signer::storage::UserStorage;
 use yew::prelude::*;
+use yew_router::prelude::use_navigator;
 
 use crate::{
-    utils::storage::LocalStorage, 
-    components::text_input::TextInput
+    utils::{storage::LocalStorage}, 
+    components::text_input::TextInput, switch::Route
 };
 
 #[derive(Clone, PartialEq, Properties)]
@@ -15,14 +16,15 @@ pub struct Props {
 
 #[function_component(InputPassword)]
 pub fn input_password(props: &Props) -> Html {
+    let navigator = use_navigator().unwrap();
     let name = use_state(|| "".to_string());
     let password = use_state(|| "".to_string());
     let confirm_password = use_state(|| "".to_string());
     let error = use_state(|| "".to_string());
-    let mut name_value= (*name).clone();
-    let mut password_value= (*password).clone();
-    let mut confirm_password_value= (*confirm_password).clone();
-    let mut error_value= (*confirm_password).clone();
+    let name_value= (*name).clone();
+    let password_value= (*password).clone();
+    let confirm_password_value= (*confirm_password).clone();
+    let error_value= (*error).clone();
 
     let onclick = {
         let initial = props.initial;
@@ -30,8 +32,7 @@ pub fn input_password(props: &Props) -> Html {
         let password = password_value.clone();
         let confirm_password = confirm_password_value.clone();
         Callback::from(move |_: MouseEvent| {
-            let data = UserStorage::read(&LocalStorage::default());
-            let mut storage = data.unwrap_or_default();
+            let mut storage = UserStorage::read(LocalStorage::default());
 
             if !initial {
                 return;
@@ -42,7 +43,10 @@ pub fn input_password(props: &Props) -> Html {
                 return;
             }
             storage.name = Some(name.to_string());
-            storage.password = Some("".to_string()) // hash password
+            storage.set_password(&password).unwrap();
+            storage.save().unwrap();
+
+            navigator.push(&Route::Home);
         })
     };
 
@@ -63,7 +67,7 @@ pub fn input_password(props: &Props) -> Html {
                 <TextInput itype="password" value={password_value} onchange={on_change_password} placeholder="Input your password"/>
                 <TextInput itype="password" value={confirm_password_value} onchange={on_change_confirm_password} placeholder="Confirm your password"/>
                 <button {onclick}>{"Create account"}</button>
-                <div></div>
+                <div>{error_value}</div>
             </div>
         }
     } else {

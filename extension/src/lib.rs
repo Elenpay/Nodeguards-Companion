@@ -1,6 +1,6 @@
+pub mod utils;
 pub mod components;
 pub mod features;
-pub mod utils;
 pub mod redirect;
 pub mod switch;
 

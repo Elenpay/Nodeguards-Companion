@@ -3,11 +3,14 @@ use signer::storage::{Wallet, UserStorage};
 use wasm_bindgen::JsCast;
 use yew::prelude::*;
 use web_sys::{ClipboardEvent};
+use yew_router::prelude::use_navigator;
 use crate::components::text_input::TextInput;
+use crate::switch::Route;
 use crate::utils::storage::LocalStorage;
 
 #[function_component(ImportFromMnemonic)]
 pub fn import_from_mnemonic() -> Html {
+    let navigator = use_navigator().unwrap();
     let mnemonic = use_state(|| Vec::new());
     let wallet_name = use_state(|| "".to_string());
     let mut mnemonic_value= (*mnemonic).clone();
@@ -28,13 +31,15 @@ pub fn import_from_mnemonic() -> Html {
         let mnemonic = mnemonic_value.clone();
         let wallet_name = wallet_name_value.clone();
         Callback::from(move |_: MouseEvent| {
-            let data = UserStorage::read(&LocalStorage::default());
+            let mut storage = UserStorage::read(LocalStorage::default());
             
             let mnemonic = &*mnemonic.join(" ");
             let wallet = Wallet::from_mnemonic_str(&wallet_name, mnemonic);
-
-            let mut storage = data.unwrap_or_default();
+            
             storage.wallets.push(wallet);
+            storage.save().unwrap();
+
+            navigator.push(&Route::Home);
         })
     };
 

@@ -20,37 +20,59 @@ impl fmt::Display for StorageKeys {
 
 
 
-#[derive(Serialize, Deserialize, Debug, Default)]
+#[derive(Serialize, Deserialize, Default)]
 pub struct UserStorage {
+    #[serde(skip_serializing, skip_deserializing)]
+    store: Option<Box<dyn Store>>,
     pub name: Option<String>,
-    pub password: Option<String>,
+    password: Option<String>,
     pub wallets: Vec<Wallet>
 }
 
 pub trait Store {
     fn get_item(&self, key: &str) -> Result<String>;
+    fn set_item(&self, key: &str, data: &str) -> Result<()>;
 }
 
 impl UserStorage {
-    pub fn read(store: &impl Store) -> Result<UserStorage> {
-        store
+    pub fn read(store: impl Store + 'static) -> UserStorage {
+        let mut user_storage: UserStorage = store
             .get_item(&StorageKeys::User.to_string())
-            .and_then(|value| serde_json::from_str(&value).map_err(|e| anyhow!(e)))
+            .and_then(|value| serde_json::from_str(&value).map_err(|e| anyhow!("{}", e)))
+            .unwrap_or_default();
+
+        user_storage.store = Some(Box::new(store));
+        user_storage
     }
 
-    // pub fn hash_password(&mut self) -> Result<()> {
-    //     let salt: [u8; 32] = rand::thread_rng().gen();
-    //     let config = Config::default();
+    pub fn save(&mut self) -> Result<()> {
+        let data = serde_json::to_string(&self)?;
+        self.store
+            .as_mut()
+            .context("Store not found")?
+            .set_item(&StorageKeys::User.to_string(), &data)
+    }
 
-    //     let password = argon2::hash_encoded(self.password.unwrap().as_bytes(), &salt, &config)
-    //         .context(|e| anyhow!("Failed to hash password: {}", e))?;
-    //     self.password = password;
+    pub fn has_password(&self) -> bool {
+        self.password.is_some()
+    }
 
-    //     Ok(())
-    // }
+    pub fn set_password(&mut self, password: &str) -> Result<()> {
+        let salt: [u8; 32] = rand::thread_rng().gen();
+        let config = Config::default();
 
-    // pub fn verify_password(&self, password: &[u8]) -> Result<bool> {
-    //     argon2::verify_encoded(&self.password, password)
-    //         .map_err(|e| ApiError::new(500, format!("Failed to verify password: {}", e)))
-    // }
+        let password = argon2::hash_encoded(password.as_bytes(), &salt, &config)
+            .map_err(|e| anyhow!("Failed to hash password: {}", e))?;
+        self.password = Some(password);
+
+        Ok(())
+    }
+
+    pub fn verify_password(&self, password: &[u8]) -> Result<bool> {
+        if self.password.is_none() {
+            return Ok(false);
+        }
+        argon2::verify_encoded(&self.password.as_ref().unwrap(), password)
+            .map_err(|e| anyhow!("Failed to verify password: {}", e))
+    }
 }
