@@ -1,13 +1,13 @@
 pub mod utils;
 pub mod components;
 pub mod features;
-pub mod redirect;
 pub mod switch;
 
 use wasm_bindgen::prelude::*;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use switch::{switch, Route};
+
 
 #[function_component]
 fn App() -> Html {

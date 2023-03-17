@@ -1,13 +1,12 @@
-use yew::{Html, html};
-use yew_router::Routable;
-use crate::redirect::Redirect;
-use crate::features::password::InputPassword;
-use crate::features::import_from_mnemonic::ImportFromMnemonic;
-use crate::features::import_wallet::ImportWallet;
+use yew::{Html, html, function_component};
+use yew_router::{Routable, prelude::use_navigator};
+use crate::features::{
+    home::Home, password::InputPassword, import_from_mnemonic::ImportFromMnemonic, import_wallet::ImportWallet
+};
 
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {
-    #[at("/popup.html")]
+    #[at("/home")]
     Home,
     #[at("/password")]
     Password,
@@ -20,12 +19,20 @@ pub enum Route {
     ImportWallet
 }
 
+#[function_component(Redirect)]
+pub fn redirect() -> Html {
+    let navigator = use_navigator().unwrap();
+    navigator.push(&Route::Home);
+
+    html! {}
+}
+
 pub fn switch(routes: Route) -> Html {
     match routes {
-        Route::Home => html! { <Redirect />},
+        Route::Home => html! { <Home /> },
         Route::Password => html! { <InputPassword initial={true} /> },
         Route::ImportWallet => html! { <ImportWallet /> },
         Route::Mnemonic => html! { <ImportFromMnemonic /> },
-        Route::NotFound => html! { <h1>{ "404" }</h1> },
+        Route::NotFound => html! { <Redirect/> },
     }
 }

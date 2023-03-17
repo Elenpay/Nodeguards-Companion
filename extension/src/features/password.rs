@@ -4,7 +4,7 @@ use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
 use crate::{
-    utils::{storage::LocalStorage}, 
+    utils::storage::LocalStorage, 
     components::text_input::TextInput, switch::Route
 };
 

@@ -63,16 +63,16 @@ impl Wallet {
 }
 
     
-#[test]
-fn encrypt_xpriv_success() {    
-    let mut wallet = Wallet::default();
-    let password = "Qwerty123";
-    let mnemonic_str = "solar goat auto bachelor chronic input twin depth fork scale divorce fury mushroom column image sauce car public artist announce treat spend jacket physical";
-    wallet.from_mnemonic_str("Wallet 1", mnemonic_str, password).unwrap();
+    #[test]
+    fn encrypt_xpriv_success() {    
+        let mut wallet = Wallet::default();
+        let password = "Qwerty123";
+        let mnemonic_str = "solar goat auto bachelor chronic input twin depth fork scale divorce fury mushroom column image sauce car public artist announce treat spend jacket physical";
+        wallet.from_mnemonic_str("Wallet 1", mnemonic_str, password).unwrap();
+        
+        let mnemonic = Mnemonic::parse(mnemonic_str).unwrap();
+        let xkey: ExtendedKey = mnemonic.into_extended_key().unwrap();
+        let xprv = xkey.into_xprv(Network::Regtest).context("No private key found").unwrap();
     
-    let mnemonic = Mnemonic::parse(mnemonic_str).unwrap();
-    let xkey: ExtendedKey = mnemonic.into_extended_key().unwrap();
-    let xprv = xkey.into_xprv(Network::Regtest).context("No private key found").unwrap();
-
-    assert_eq!(xprv, wallet.get_xprv(password).unwrap())
-}
+        assert_eq!(xprv, wallet.get_xprv(password).unwrap())
+    }

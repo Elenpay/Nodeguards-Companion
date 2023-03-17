@@ -13,9 +13,11 @@ pub fn import_from_mnemonic() -> Html {
     let navigator = use_navigator().unwrap();
     let mnemonic = use_state(|| Vec::new());
     let wallet_name = use_state(|| "".to_string());
+    let error = use_state(|| "".to_string());
     let mut mnemonic_value= (*mnemonic).clone();
     let wallet_name_value = (*wallet_name).clone();
-    
+    let error_value= (*error).clone();
+
     let onpaste = {
         Callback::from(move |e: Event| {
             let clipboard_event = e.dyn_into::<ClipboardEvent>().ok();
@@ -32,7 +34,12 @@ pub fn import_from_mnemonic() -> Html {
         let wallet_name = wallet_name_value.clone();
         Callback::from(move |_: MouseEvent| {
             let mut storage = UserStorage::read(LocalStorage::default());
-            
+
+            if storage.wallets.iter().find(|w| w.name.eq(&wallet_name)).is_some() {
+                error.set("There is already a wallet with that name".into());
+                return; 
+            }
+
             let mnemonic = &*mnemonic.join(" ");
             let mut wallet = Wallet::default();
             wallet.from_mnemonic_str(&wallet_name, mnemonic, "Qwerty123").unwrap();
@@ -64,6 +71,7 @@ pub fn import_from_mnemonic() -> Html {
                 }
                 <button {onclick}>{"Save"}</button>
             </ol>
+            <div>{error_value}</div>
         </>
     }
 }

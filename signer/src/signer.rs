@@ -1,6 +1,4 @@
 use std::str::FromStr;
-use base64::Engine;
-use base64::engine::general_purpose;
 use bitcoin::consensus::serialize;
 use bitcoin::psbt::Input;
 use bitcoin::secp256k1::ecdsa::Signature;
