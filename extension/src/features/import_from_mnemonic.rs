@@ -34,7 +34,8 @@ pub fn import_from_mnemonic() -> Html {
             let mut storage = UserStorage::read(LocalStorage::default());
             
             let mnemonic = &*mnemonic.join(" ");
-            let wallet = Wallet::from_mnemonic_str(&wallet_name, mnemonic);
+            let mut wallet = Wallet::default();
+            wallet.from_mnemonic_str(&wallet_name, mnemonic, "Qwerty123").unwrap();
             
             storage.wallets.push(wallet);
             storage.save().unwrap();

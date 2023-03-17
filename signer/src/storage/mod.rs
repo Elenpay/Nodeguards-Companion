@@ -18,8 +18,6 @@ impl fmt::Display for StorageKeys {
     }
 }
 
-
-
 #[derive(Serialize, Deserialize, Default)]
 pub struct UserStorage {
     #[serde(skip_serializing, skip_deserializing)]

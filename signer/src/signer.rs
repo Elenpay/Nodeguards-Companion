@@ -12,6 +12,7 @@ use bitcoin::util::psbt::PartiallySignedTransaction;
 use anyhow::{Context, Result, anyhow};
 
 
+use crate::utils::base64::to_base64;
 use crate::wallet::Wallet;
 
 fn set_sighash_type<'a>(signature: Signature, input: &Input) -> EcdsaSig {
@@ -71,10 +72,12 @@ fn sign_psbt(mut psbt: PartiallySignedTransaction, xprv: ExtendedPrivKey) -> Res
 
 pub fn decode_psbt_and_sign(psbt_64: &str) {
     // let wallet = Wallet::from_mnemonic_str("social mango annual basic work brain economy one safe physical junk other toy valid load cook napkin maple runway island oil fan legend stem");
-    let wallet = Wallet::from_mnemonic_str("wallet 1", "solar goat auto bachelor chronic input twin depth fork scale divorce fury mushroom column image sauce car public artist announce treat spend jacket physical");
+    let mut wallet = Wallet::default();
+    wallet.from_mnemonic_str("wallet 1", "solar goat auto bachelor chronic input twin depth fork scale divorce fury mushroom column image sauce car public artist announce treat spend jacket physical", "Qwerty123").unwrap();
     let psbt = PartiallySignedTransaction::from_str(&psbt_64).unwrap();
 
-    let signed_psbt = sign_psbt(psbt, wallet.xprv.unwrap()).unwrap();
+    let xprv = wallet.get_xprv("Qwerty123").unwrap();
+    let signed_psbt = sign_psbt(psbt, xprv).unwrap();
     
-    println!("{}", general_purpose::STANDARD.encode(&serialize(&signed_psbt)));
+    println!("{}", to_base64(&serialize(&signed_psbt)));
 }
