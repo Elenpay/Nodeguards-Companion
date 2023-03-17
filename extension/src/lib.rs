@@ -1,3 +1,4 @@
+pub mod context;
 pub mod utils;
 pub mod components;
 pub mod features;
@@ -7,13 +8,15 @@ use wasm_bindgen::prelude::*;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use switch::{switch, Route};
-
+use context::UserContextProvider;
 
 #[function_component]
 fn App() -> Html {
     html! {
         <BrowserRouter>
-            <Switch<Route> render={switch} /> 
+            <UserContextProvider>
+                <Switch<Route> render={switch} />
+            </UserContextProvider>
         </BrowserRouter> 
     }
 }

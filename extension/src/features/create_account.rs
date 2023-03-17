@@ -8,14 +8,8 @@ use crate::{
     components::text_input::TextInput, switch::Route
 };
 
-#[derive(Clone, PartialEq, Properties)]
-pub struct Props {
-    pub initial: bool
-}
-
-
-#[function_component(InputPassword)]
-pub fn input_password(props: &Props) -> Html {
+#[function_component(CreateAccount)]
+pub fn create_account() -> Html {
     let navigator = use_navigator().unwrap();
     let name = use_state(|| "".to_string());
     let password = use_state(|| "".to_string());
@@ -27,16 +21,11 @@ pub fn input_password(props: &Props) -> Html {
     let error_value= (*error).clone();
 
     let onclick = {
-        let initial = props.initial;
         let name = name_value.clone();
         let password = password_value.clone();
         let confirm_password = confirm_password_value.clone();
         Callback::from(move |_: MouseEvent| {
             let mut storage = UserStorage::read(LocalStorage::default());
-
-            if !initial {
-                return;
-            }
 
             if password != confirm_password {
                 error.set("Password don't match".into());
@@ -60,22 +49,13 @@ pub fn input_password(props: &Props) -> Html {
         let _ = value.map(|v| confirm_password.set(v));
     });
 
-    if props.initial {
-        html! {
-            <div>
-                <TextInput value={name_value} onchange={on_change_name} placeholder="Input your name"/>
-                <TextInput itype="password" value={password_value} onchange={on_change_password} placeholder="Input your password"/>
-                <TextInput itype="password" value={confirm_password_value} onchange={on_change_confirm_password} placeholder="Confirm your password"/>
-                <button {onclick}>{"Create account"}</button>
-                <div>{error_value}</div>
-            </div>
-        }
-    } else {
-        html! {
-            <div>
-                <input type="password" />
-                <button {onclick}>{"Sign"}</button>
-            </div>
-        }
+    html! {
+        <div>
+            <TextInput value={name_value} onchange={on_change_name} placeholder="Input your name"/>
+            <TextInput itype="password" value={password_value} onchange={on_change_password} placeholder="Input your password"/>
+            <TextInput itype="password" value={confirm_password_value} onchange={on_change_confirm_password} placeholder="Confirm your password"/>
+            <button {onclick}>{"Create account"}</button>
+            <div>{error_value}</div>
+        </div>
     }
 }

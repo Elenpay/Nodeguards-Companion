@@ -1,16 +1,18 @@
 use anyhow::Result;
-use signer::storage::{Wallet, UserStorage};
+use signer::storage::{UserStorage};
 use wasm_bindgen::JsCast;
 use yew::prelude::*;
 use web_sys::{ClipboardEvent};
 use yew_router::prelude::use_navigator;
 use crate::components::text_input::TextInput;
-use crate::switch::Route;
+use crate::context::{ContextAction, UserContext};
+use crate::switch::{Route, PasswordFor};
 use crate::utils::storage::LocalStorage;
 
 #[function_component(ImportFromMnemonic)]
 pub fn import_from_mnemonic() -> Html {
     let navigator = use_navigator().unwrap();
+    let global_state = use_context::<UserContext>().unwrap();
     let mnemonic = use_state(|| Vec::new());
     let wallet_name = use_state(|| "".to_string());
     let error = use_state(|| "".to_string());
@@ -30,24 +32,24 @@ pub fn import_from_mnemonic() -> Html {
     };
 
     let onclick = {
+        let global_state = global_state.clone();
         let mnemonic = mnemonic_value.clone();
         let wallet_name = wallet_name_value.clone();
         Callback::from(move |_: MouseEvent| {
-            let mut storage = UserStorage::read(LocalStorage::default());
+            let storage = UserStorage::read(LocalStorage::default());
 
             if storage.wallets.iter().find(|w| w.name.eq(&wallet_name)).is_some() {
                 error.set("There is already a wallet with that name".into());
                 return; 
             }
-
-            let mnemonic = &*mnemonic.join(" ");
-            let mut wallet = Wallet::default();
-            wallet.from_mnemonic_str(&wallet_name, mnemonic, "Qwerty123").unwrap();
             
-            storage.wallets.push(wallet);
-            storage.save().unwrap();
+            let mnemonic = (*mnemonic).join(" ");
+            global_state.dispatch(ContextAction::AddWallet {
+                wallet_name: wallet_name.to_string(),
+                mnemonic,
+            });
 
-            navigator.push(&Route::Home);
+            navigator.push(&Route::Password { _for: PasswordFor::ImportingMnemonic });
         })
     };
 

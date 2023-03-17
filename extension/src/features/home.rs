@@ -1,5 +1,6 @@
 use signer::storage::UserStorage;
-use yew::{function_component, Html, html};
+use web_sys::MouseEvent;
+use yew::{function_component, Html, html, Callback};
 use yew_router::prelude::use_navigator;
 use crate::{utils::storage::LocalStorage, switch::Route};
 
@@ -8,11 +9,17 @@ pub fn home() -> Html {
     let navigator = use_navigator().unwrap();
     let storage = UserStorage::read(LocalStorage::default());
     if !storage.has_password() || !storage.name.is_some() {
-        navigator.push(&Route::Password);
+        navigator.push(&Route::CreateAccount);
     } else if storage.wallets.len() == 0 {
         navigator.push(&Route::ImportWallet);
     }
     
+    let onclick = {
+        Callback::from(move |_: MouseEvent| {
+            navigator.push(&Route::ImportWallet);
+        })
+    };
+
     html! {
         <>
             <div>{"Your wallets"}</div>
@@ -27,6 +34,7 @@ pub fn home() -> Html {
                 }).collect::<Html>()
                 }
             </select>
+            <button {onclick}>{"Import another wallet"}</button>
         </>
     }
 }
