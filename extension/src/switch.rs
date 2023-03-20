@@ -1,10 +1,10 @@
 use std::{str::FromStr, error::Error, fmt::{Display, Formatter}};
-
 use yew::{Html, html, function_component};
 use yew_router::{Routable, prelude::use_navigator};
-use crate::features::{
+use crate::{features::{
     home::Home, create_account::CreateAccount, import_from_mnemonic::ImportFromMnemonic, import_wallet::ImportWallet, input_password::InputPassword
-};
+}, context::UserContextProvider};
+
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum PasswordFor {
@@ -55,12 +55,18 @@ pub fn redirect() -> Html {
 }
 
 pub fn switch(routes: Route) -> Html {
-    match routes {
+    let render_route = match routes {
         Route::Home => html! { <Home /> },
         Route::CreateAccount => html! { <CreateAccount /> },
         Route::Password { _for } => html! { <InputPassword _for={_for}/> },
         Route::ImportWallet => html! { <ImportWallet /> },
         Route::Mnemonic => html! { <ImportFromMnemonic /> },
         Route::NotFound => html! { <Redirect/> },
+    };
+
+    html! {
+        <UserContextProvider>
+            {render_route}
+        </UserContextProvider>
     }
 }

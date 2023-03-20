@@ -8,16 +8,15 @@ use wasm_bindgen::prelude::*;
 use yew::prelude::*;
 use yew_router::prelude::*;
 use switch::{switch, Route};
-use context::UserContextProvider;
 
 #[function_component]
 fn App() -> Html {
     html! {
-        <BrowserRouter>
-            <UserContextProvider>
+        <div class="app">
+            <BrowserRouter>
                 <Switch<Route> render={switch} />
-            </UserContextProvider>
-        </BrowserRouter> 
+            </BrowserRouter>
+        </div>
     }
 }
 

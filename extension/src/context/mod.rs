@@ -1,5 +1,5 @@
 use std::rc::Rc;
-
+use web_sys::console;
 use yew::{Reducible, UseReducerHandle, Properties, Children, function_component, Html, use_reducer, html, ContextProvider};
 
 pub enum ContextAction {
@@ -22,6 +22,8 @@ impl Reducible for UserState {
             ContextAction::AddWallet { wallet_name, mnemonic } => (wallet_name, mnemonic),
         };
 
+        console::log_1(&format!("reducer: {}", &mnemonic).into());
+
         Self { wallet_name, mnemonic }.into()
     }
 }
@@ -29,17 +31,17 @@ impl Reducible for UserState {
 pub type UserContext = UseReducerHandle<UserState>;
 
 #[derive(Properties, Debug, PartialEq)]
-pub struct MessageProviderProps {
+pub struct UserContextProviderProps {
     #[prop_or_default]
     pub children: Children,
 }
 
 #[function_component]
-pub fn UserContextProvider(props: &MessageProviderProps) -> Html {
-    let context = use_reducer(UserState::default);
-
+pub fn UserContextProvider(props: &UserContextProviderProps) -> Html {
+    let reducer = use_reducer(UserState::default);
+    
     html! {
-        <ContextProvider<UserContext> context={context}>
+        <ContextProvider<UserContext> context={reducer}>
             {props.children.clone()}
         </ContextProvider<UserContext>>
     }

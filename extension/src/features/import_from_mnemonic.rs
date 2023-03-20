@@ -1,8 +1,8 @@
 use anyhow::Result;
-use signer::storage::{UserStorage};
+use signer::storage::UserStorage;
 use wasm_bindgen::JsCast;
 use yew::prelude::*;
-use web_sys::{ClipboardEvent};
+use web_sys::ClipboardEvent;
 use yew_router::prelude::use_navigator;
 use crate::components::text_input::TextInput;
 use crate::context::{ContextAction, UserContext};
@@ -40,10 +40,15 @@ pub fn import_from_mnemonic() -> Html {
 
             if storage.wallets.iter().find(|w| w.name.eq(&wallet_name)).is_some() {
                 error.set("There is already a wallet with that name".into());
-                return; 
+                return;
             }
-            
+            if (*mnemonic).len() != 24 {
+                error.set("Mnemonic not properly written".into());
+                return;
+            }
+
             let mnemonic = (*mnemonic).join(" ");
+            
             global_state.dispatch(ContextAction::AddWallet {
                 wallet_name: wallet_name.to_string(),
                 mnemonic,
@@ -60,7 +65,8 @@ pub fn import_from_mnemonic() -> Html {
     mnemonic_value.resize(24, "".to_string());
     html! {
         <>
-            <TextInput value={wallet_name_value} onchange={on_change}/>
+            <h class="title">{"Import from Mnemonic"}</h> 
+            <TextInput value={wallet_name_value} onchange={on_change} placeholder="Input your wallet's name"/>
             <ol {onpaste}>
                 {
                     mnemonic_value.to_owned().iter().enumerate().map(|(index, word)| {
@@ -71,9 +77,9 @@ pub fn import_from_mnemonic() -> Html {
                         }
                     }).collect::<Html>()
                 }
-                <button {onclick}>{"Save"}</button>
-            </ol>
-            <div>{error_value}</div>
+                </ol>
+            <div class="error">{error_value}</div>
+            <button {onclick}>{"Save"}</button>
         </>
     }
 }

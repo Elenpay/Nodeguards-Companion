@@ -4,7 +4,7 @@ use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
 use crate::{
-    utils::storage::LocalStorage, 
+    utils::{storage::LocalStorage, macros::with_error_msg}, 
     components::text_input::TextInput, switch::Route
 };
 
@@ -27,13 +27,22 @@ pub fn create_account() -> Html {
         Callback::from(move |_: MouseEvent| {
             let mut storage = UserStorage::read(LocalStorage::default());
 
-            if password != confirm_password {
-                error.set("Password don't match".into());
+            if name.trim().is_empty() || password.trim().is_empty() || confirm_password.trim().is_empty() {
+                error.set("All fields must be set".into());
                 return;
             }
-            storage.name = Some(name.to_string());
-            storage.set_password(&password).unwrap();
-            storage.save().unwrap();
+            if password != confirm_password {
+                error.set("Passwords don't match".into());
+                return;
+            }
+
+            storage.name = Some(name.trim().to_string());
+            
+            let password_set = storage.set_password(&password);
+            with_error_msg!(password_set, error.set("Error while setting password".to_string()));
+
+            let stored = storage.save();
+            with_error_msg!(stored, error.set("Error while storing account".to_string()));
 
             navigator.push(&Route::Home);
         })
@@ -50,12 +59,17 @@ pub fn create_account() -> Html {
     });
 
     html! {
-        <div>
-            <TextInput value={name_value} onchange={on_change_name} placeholder="Input your name"/>
-            <TextInput itype="password" value={password_value} onchange={on_change_password} placeholder="Input your password"/>
-            <TextInput itype="password" value={confirm_password_value} onchange={on_change_confirm_password} placeholder="Confirm your password"/>
-            <button {onclick}>{"Create account"}</button>
-            <div>{error_value}</div>
-        </div>
+        <>
+            <h class="title">{"Create Account"}</h>
+            <div class="container">
+                <TextInput value={name_value} onchange={on_change_name} placeholder="Input your name"/>
+                <TextInput itype="password" value={password_value} onchange={on_change_password} placeholder="Input your password"/>
+                <TextInput itype="password" value={confirm_password_value} onchange={on_change_confirm_password} placeholder="Confirm your password"/>
+                </div>
+            <div>
+                <div class="error">{error_value}</div>
+                <button {onclick}>{"Create account"}</button>
+            </div>
+        </>
     }
 }

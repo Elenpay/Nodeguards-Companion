@@ -15,6 +15,12 @@ pub fn import_wallet() -> Html {
     };
 
     html! {
-        <button {onclick}>{"Import from Mnemonic"}</button>
+        <>
+            <h class="title">{"Import your wallet"}</h>
+            <div class="import-buttons">
+                <button {onclick}>{"Import from Mnemonic"}</button>
+                <button>{"Import from Master Private Key (TODO)"}</button>
+            </div>
+        </>
     }
 }

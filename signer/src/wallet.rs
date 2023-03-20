@@ -48,9 +48,9 @@ impl Wallet {
     }
 
     pub fn from_mnemonic_str(&mut self, name: &str, mnemonic: &str, password: &str) -> Result<()> {
-        let mnemonic = Mnemonic::parse(mnemonic).unwrap();
-        let xkey: ExtendedKey = mnemonic.into_extended_key().unwrap();
-        let xprv = xkey.into_xprv(Network::Regtest).context("No private key found").unwrap();
+        let mnemonic = Mnemonic::parse(mnemonic)?;
+        let xkey: ExtendedKey = mnemonic.into_extended_key()?;
+        let xprv = xkey.into_xprv(Network::Regtest).context("No private key found")?;
         
         let encrypted_xprv = self.encrypt_xprv(password, xprv)?;
 

@@ -22,8 +22,8 @@ pub fn home() -> Html {
 
     html! {
         <>
-            <div>{"Your wallets"}</div>
-            <select name="cars" id="cars">
+        <h class="title">{"Your Wallets"}</h>
+            <select>
                 {
                     storage.wallets.iter().map(|w| {
                         let name = w.name.to_string();
@@ -34,6 +34,7 @@ pub fn home() -> Html {
                 }).collect::<Html>()
                 }
             </select>
+            <button>{"Reveal XPRV (TODO)"}</button>
             <button {onclick}>{"Import another wallet"}</button>
         </>
     }

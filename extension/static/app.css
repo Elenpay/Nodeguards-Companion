@@ -1,0 +1,66 @@
+html {
+    font-family: sans-serif;
+}
+
+body {
+    background-color: #011936;
+}
+
+input, select {
+    color: white;
+    border: 1px solid #51A3A3;
+    border-radius: 5px;
+    background: none;
+    margin: 0px;
+    padding: 5px 7px;
+    margin: 5px 0px;
+}
+
+button {
+    color: white;
+    background-color: #51A3A3;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    padding: 10px;
+    margin: 5px 0;
+}
+
+ol {
+    color: white;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    height: 490px;
+}
+
+li {
+    width: 50%;
+}
+
+.app {
+    width: 500px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.title {
+    color: white;
+    font-size: large;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+}
+
+.error {
+    height: 15px;
+    color: #E54B4B;
+}
+
+.import-buttons {
+    display: flex;
+    flex-direction: column;
+}
