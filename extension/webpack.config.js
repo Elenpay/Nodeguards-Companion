@@ -1,11 +1,11 @@
 const path = require("path");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
-// const WasmPackPlugin = require("@wasm-tool/wasm-pack-plugin")
 
 module.exports = {
   mode: process.env.NODE_ENV || "development",
   entry: {
-    popup: "./src/popup.ts"
+    popup: "./src/popup.ts",
+    content: "./src/content.ts"
   },
   output: {
     path: path.resolve(__dirname, "dist/"),
@@ -19,14 +19,11 @@ module.exports = {
     ]
   },
   plugins: [
-    // new WasmPackPlugin({
-    //   crateDirectory: path.resolve(__dirname, "node_modules", "signer"),
-    //   outDir: path.resolve(__dirname, "dist", "node_modules", "signer"),
-    //   outName: "signer"
-    // }),
     new CopyWebpackPlugin({
       patterns: [
         { from: "static", to: "." },
+        { from: "node_modules/webextension-polyfill/dist/browser-polyfill.min.js", to: "." },
+        
       ]
     })
   ],

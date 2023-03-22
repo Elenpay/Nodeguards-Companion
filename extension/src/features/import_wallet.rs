@@ -8,11 +8,9 @@ use crate::Route;
 pub fn import_wallet() -> Html {
     let navigator = use_navigator().unwrap();
 
-    let onclick = {
-        Callback::from(move |_: MouseEvent| {
-            navigator.push(&Route::Mnemonic);
-        })
-    };
+    let onclick = Callback::from(move |_: MouseEvent| {
+        navigator.push(&Route::Mnemonic);
+    });
 
     html! {
         <>

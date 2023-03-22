@@ -1,5 +1,7 @@
 html {
+    border-radius: 10px;
     font-family: sans-serif;
+    color: white
 }
 
 body {
@@ -17,7 +19,6 @@ input, select {
 }
 
 button {
-    color: white;
     background-color: #51A3A3;
     border: 1px solid transparent;
     border-radius: 5px;
@@ -26,7 +27,6 @@ button {
 }
 
 ol {
-    color: white;
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
@@ -46,8 +46,8 @@ li {
 }
 
 .title {
-    color: white;
     font-size: large;
+    margin-bottom: 5px;
 }
 
 .container {
@@ -56,11 +56,18 @@ li {
 }
 
 .error {
-    height: 15px;
     color: #E54B4B;
+    height: 15px;
 }
 
 .import-buttons {
     display: flex;
     flex-direction: column;
+}
+
+.display-field {
+    margin: 5px 0;
+}
+.display-field > strong {
+    margin-right: 5px;
 }

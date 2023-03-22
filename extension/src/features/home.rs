@@ -1,8 +1,8 @@
-use signer::storage::UserStorage;
+use signer::{storage::UserStorage};
 use web_sys::MouseEvent;
 use yew::{function_component, Html, html, Callback};
 use yew_router::prelude::use_navigator;
-use crate::{utils::storage::LocalStorage, switch::Route};
+use crate::{utils::{storage::LocalStorage, events::EventManager}, switch::Route};
 
 #[function_component(Home)]
 pub fn home() -> Html {
@@ -13,17 +13,20 @@ pub fn home() -> Html {
     } else if storage.wallets.len() == 0 {
         navigator.push(&Route::ImportWallet);
     }
-    
-    let onclick = {
-        Callback::from(move |_: MouseEvent| {
+
+    let nav = navigator.clone();
+    EventManager::register_callback("approve_psbt", move |data| {
+        nav.push_with_state(&Route::ApprovePSBT, data);
+    });
+
+    let onclick = Callback::from(move |_: MouseEvent| {
             navigator.push(&Route::ImportWallet);
-        })
-    };
+    });
 
     html! {
         <>
-        <h class="title">{"Your Wallets"}</h>
-            <select>
+            <h class="title">{"Your Wallets"}</h>
+            <select name="wallets">
                 {
                     storage.wallets.iter().map(|w| {
                         let name = w.name.to_string();

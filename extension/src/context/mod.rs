@@ -1,5 +1,4 @@
 use std::rc::Rc;
-use web_sys::console;
 use yew::{Reducible, UseReducerHandle, Properties, Children, function_component, Html, use_reducer, html, ContextProvider};
 
 pub enum ContextAction {
@@ -21,9 +20,6 @@ impl Reducible for UserState {
         let (wallet_name, mnemonic) = match action {
             ContextAction::AddWallet { wallet_name, mnemonic } => (wallet_name, mnemonic),
         };
-
-        console::log_1(&format!("reducer: {}", &mnemonic).into());
-
         Self { wallet_name, mnemonic }.into()
     }
 }
