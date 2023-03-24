@@ -1,13 +1,13 @@
-use std::fmt;
-use anyhow::{Result, anyhow, Context};
-use serde::{Serialize, Deserialize};
+use anyhow::{anyhow, Context, Result};
 use argon2::Config;
 use rand::Rng;
+use serde::{Deserialize, Serialize};
+use std::fmt;
 
 pub use crate::wallet::Wallet;
 
 pub enum StorageKeys {
-    User
+    User,
 }
 
 impl fmt::Display for StorageKeys {
@@ -24,7 +24,8 @@ pub struct UserStorage {
     store: Option<Box<dyn Store>>,
     pub name: Option<String>,
     password: Option<String>,
-    pub wallets: Vec<Wallet>
+    pub wallets: Vec<Wallet>,
+    pub default_wallet: Option<String>,
 }
 
 pub trait Store {
@@ -72,5 +73,24 @@ impl UserStorage {
         }
         argon2::verify_encoded(&self.password.as_ref().unwrap(), password)
             .map_err(|e| anyhow!("Failed to verify password: {}", e))
+    }
+
+    pub fn get_default_wallet(&self) -> String {
+        match &self.default_wallet {
+            Some(wallet) => wallet.to_string(),
+            None => self
+                .wallets
+                .first()
+                .map(|w| w.name.clone())
+                .unwrap_or("".to_string()),
+        }
+    }
+
+    pub fn get_wallet_ref(&self, wallet_name: &str) -> Option<&Wallet> {
+        self.wallets.iter().find(|w| w.name.eq(wallet_name))
+    }
+
+    pub fn get_wallet_mut(&mut self, wallet_name: &str) -> Option<&mut Wallet> {
+        self.wallets.iter_mut().find(|w| w.name.eq(wallet_name))
     }
 }

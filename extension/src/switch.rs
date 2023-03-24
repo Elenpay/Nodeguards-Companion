@@ -1,33 +1,37 @@
-use std::{str::FromStr, error::Error, fmt::{Display, Formatter}};
-use yew::{Html, html, function_component};
-use yew_router::{Routable, prelude::use_navigator};
-use crate::{features::{
-    home::Home, create_account::CreateAccount, import_from_mnemonic::ImportFromMnemonic, import_wallet::ImportWallet, input_password::InputPassword, approve_psbt::ApprovePSBT
-}, context::UserContextProvider};
+use crate::features::{
+    approve_psbt::ApprovePSBT, create_account::CreateAccount, generate_mnemonic::GenerateMnemonic,
+    home::Home, import_from_mnemonic::ImportFromMnemonic, import_wallet::ImportWallet,
+};
+use std::{
+    error::Error,
+    fmt::{Display, Formatter},
+    str::FromStr,
+};
+use yew::{function_component, html, Html};
+use yew_router::{prelude::use_navigator, Routable};
 
-
-#[derive(Debug, PartialEq, Clone)]
-pub enum PasswordFor {
-    ImportingMnemonic,
-    SigningPSBT
+#[derive(Clone, PartialEq)]
+pub enum Mnemonic {
+    Import,
+    Generate,
 }
 
-impl Display for PasswordFor {
+impl Display for Mnemonic {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match *self {
-            PasswordFor::ImportingMnemonic => write!(f, "importingmnemonic"),
-            PasswordFor::SigningPSBT => write!(f, "signingpsbt")
+            Mnemonic::Import => write!(f, "import"),
+            Mnemonic::Generate => write!(f, "generate"),
         }
     }
 }
 
-impl FromStr for PasswordFor {
+impl FromStr for Mnemonic {
     type Err = Box<dyn Error>;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
-            "importingmnemonic" => Ok(PasswordFor::ImportingMnemonic),
-            "signingpsbt" => Ok(PasswordFor::SigningPSBT),
-            _ => Err("Variant not found".into())
+            "import" => Ok(Mnemonic::Import),
+            "generate" => Ok(Mnemonic::Generate),
+            _ => Err("Variant not found".into()),
         }
     }
 }
@@ -36,19 +40,17 @@ impl FromStr for PasswordFor {
 pub enum Route {
     #[at("/home")]
     Home,
-    #[at("/password/:_for")]
-    Password { _for: PasswordFor },
     #[at("/createaccount")]
     CreateAccount,
     #[not_found]
     #[at("/404")]
     NotFound,
-    #[at("/mnemonic")]
-    Mnemonic,
+    #[at("/mnemonic/:action")]
+    Mnemonic { action: Mnemonic },
     #[at("/importwallet")]
     ImportWallet,
     #[at("/approve")]
-    ApprovePSBT
+    ApprovePSBT,
 }
 
 #[function_component(Redirect)]
@@ -63,16 +65,18 @@ pub fn switch(routes: Route) -> Html {
     let render_route = match routes {
         Route::Home => html! { <Home /> },
         Route::CreateAccount => html! { <CreateAccount /> },
-        Route::Password { _for } => html! { <InputPassword _for={_for}/> },
         Route::ImportWallet => html! { <ImportWallet /> },
-        Route::Mnemonic => html! { <ImportFromMnemonic /> },
+        Route::Mnemonic {
+            action: Mnemonic::Import,
+        } => html! { <ImportFromMnemonic /> },
+        Route::Mnemonic {
+            action: Mnemonic::Generate,
+        } => html! { <GenerateMnemonic /> },
         Route::NotFound => html! { <Redirect/> },
         Route::ApprovePSBT => html! { <ApprovePSBT/> },
     };
 
     html! {
-        <UserContextProvider>
-            {render_route}
-        </UserContextProvider>
+        {render_route}
     }
 }

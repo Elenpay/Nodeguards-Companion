@@ -1,6 +1,7 @@
 use crate::components::text_input::TextInput;
 use crate::context::{ContextAction, UserContext};
 use crate::switch::Route;
+use crate::utils::helpers::get_clipboard;
 use crate::utils::macros::with_error_msg;
 use crate::utils::state::PasswordFor;
 use crate::utils::storage::LocalStorage;
@@ -8,15 +9,20 @@ use anyhow::{anyhow, Result};
 use signer::storage::UserStorage;
 use signer::wallet::Wallet;
 use wasm_bindgen::JsCast;
-use web_sys::ClipboardEvent;
+use web_sys::{console, window, ClipboardEvent};
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
-#[function_component(ImportFromMnemonic)]
-pub fn import_from_mnemonic() -> Html {
+fn generate() -> Result<Vec<String>> {
+    Wallet::generate_mnemonic()
+        .and_then(|words| Ok(words.split_whitespace().map(|w| w.to_string()).collect()))
+}
+
+#[function_component(GenerateMnemonic)]
+pub fn generate_mnemonic() -> Html {
     let context = use_context::<UserContext>().unwrap();
     let navigator = use_navigator().unwrap();
-    let mnemonic = use_state(|| Vec::new());
+    let mnemonic = use_state(|| generate().unwrap_or_default());
     let wallet_name = use_state(|| "".to_string());
     let error = use_state(|| "".to_string());
     let disable_button = use_state(|| false);
@@ -24,33 +30,26 @@ pub fn import_from_mnemonic() -> Html {
     let wallet_name_value = (*wallet_name).clone();
     let error_value = (*error).clone();
 
-    let onpaste = {
+    let on_click_generate = {
+        let mnemonic = mnemonic.clone();
         let error = error.clone();
-        Callback::from(move |e: Event| {
-            e.prevent_default();
-            let clipboard_event = e.dyn_into::<ClipboardEvent>().ok();
-            let clipboard = clipboard_event
-                .and_then(|e| e.clipboard_data())
-                .ok_or(anyhow!("No clipboard found"));
-            let result = clipboard
-                .and_then(|c| {
-                    c.get_data("text/plain")
-                        .map_err(|_| anyhow!("Error while getting data from clipboard"))
-                })
-                .map(|t| {
-                    t.split_whitespace()
-                        .map(|w| w.to_string())
-                        .collect::<Vec<String>>()
-                })
-                .map(|v| mnemonic.set(v));
+        Callback::from(move |_: MouseEvent| {
+            let mnemonic_str = generate().and_then(|words| Ok(mnemonic.set(words)));
             with_error_msg!(
-                result,
+                mnemonic_str,
                 error.set("Error while generating mnemonic".to_string())
             );
         })
     };
 
-    let onclick = {
+    let on_click_copy = {
+        let mnemonic = mnemonic_value.clone();
+        Callback::from(move |_: MouseEvent| {
+            let _ = get_clipboard().and_then(|c| Ok(c.write_text(&mnemonic.join(" "))));
+        })
+    };
+
+    let on_click_save = {
         let mnemonic = mnemonic_value.clone();
         let wallet_name = wallet_name_value.clone();
         let error = error.clone();
@@ -106,19 +105,21 @@ pub fn import_from_mnemonic() -> Html {
         <>
             <h class="title">{"Import from Mnemonic"}</h>
             <TextInput value={wallet_name_value} onchange={on_change} placeholder="Input your wallet's name"/>
-            <ol {onpaste}>
+            <ol>
                 {
                     mnemonic_value.to_owned().iter().enumerate().map(|(index, word)| {
                         html!{
                             <li>
-                                <input key={index} value={word.to_string()}/>
+                                <input disabled={true} key={index} value={word.to_string()}/>
                             </li>
                         }
                     }).collect::<Html>()
                 }
                 </ol>
             <div class="error">{error_value}</div>
-            <button disabled={*disable_button} {onclick}>{"Save"}</button>
+            <button disabled={*disable_button} onclick={on_click_generate}>{"Generate Again"}</button>
+            <button disabled={*disable_button} onclick={on_click_copy}>{"Copy Mnemonic"}</button>
+            <button disabled={*disable_button} onclick={on_click_save}>{"Save"}</button>
         </>
     }
 }

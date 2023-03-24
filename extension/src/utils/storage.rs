@@ -1,4 +1,4 @@
-use anyhow::{Result, Context, anyhow};
+use anyhow::{anyhow, Context, Result};
 pub use signer::storage::*;
 pub use web_sys::Storage;
 
@@ -7,19 +7,20 @@ pub struct LocalStorage {}
 
 fn get_storage() -> Result<Storage> {
     web_sys::window()
-    .context("Window not available")
-    .and_then(|window| window
-        .local_storage()
-        .ok()
-        .flatten()
-        .context("localStorage not available"))
+        .context("Window not available")
+        .and_then(|window| {
+            window
+                .local_storage()
+                .ok()
+                .flatten()
+                .context("localStorage not available")
+        })
 }
 
 impl Store for LocalStorage {
-
     fn get_item(&self, key: &str) -> Result<String> {
         let storage = get_storage()?;
-        
+
         storage
             .get_item(&key)
             .ok()

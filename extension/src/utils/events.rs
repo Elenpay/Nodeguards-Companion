@@ -1,17 +1,16 @@
-
+use std::any::Any;
 use std::cell::RefCell;
 use std::thread_local;
-use std::any::Any;
 
 #[derive(Debug)]
 pub struct State {
-    data: Box<dyn Any>
+    data: Box<dyn Any>,
 }
 
 impl State {
     pub fn new<T: Any>(data: T) -> Self {
         Self {
-            data: Box::new(data)
+            data: Box::new(data),
         }
     }
 
@@ -34,7 +33,12 @@ pub struct EventManager {}
 
 impl EventManager {
     pub fn register_callback<F: Fn(State) -> () + 'static>(name: &str, callback: F) {
-        STATE.with(|state| state.mutable_data.borrow_mut().push((name.to_string(), Box::new(callback))));
+        STATE.with(|state| {
+            state
+                .mutable_data
+                .borrow_mut()
+                .push((name.to_string(), Box::new(callback)))
+        });
     }
 
     pub fn call(method: &str, state: State) {

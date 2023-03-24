@@ -1,8 +1,11 @@
-use signer::{storage::UserStorage};
+use crate::{
+    switch::Route,
+    utils::{events::EventManager, storage::LocalStorage},
+};
+use signer::storage::UserStorage;
 use web_sys::MouseEvent;
-use yew::{function_component, Html, html, Callback};
+use yew::{function_component, html, Callback, Html};
 use yew_router::prelude::use_navigator;
-use crate::{utils::{storage::LocalStorage, events::EventManager}, switch::Route};
 
 #[function_component(Home)]
 pub fn home() -> Html {
@@ -20,7 +23,7 @@ pub fn home() -> Html {
     });
 
     let onclick = Callback::from(move |_: MouseEvent| {
-            navigator.push(&Route::ImportWallet);
+        navigator.push(&Route::ImportWallet);
     });
 
     html! {

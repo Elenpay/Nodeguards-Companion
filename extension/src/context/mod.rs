@@ -1,26 +1,39 @@
 use std::rc::Rc;
-use yew::{Reducible, UseReducerHandle, Properties, Children, function_component, Html, use_reducer, html, ContextProvider};
+use yew::{
+    function_component, html, use_reducer, Children, ContextProvider, Html, Properties, Reducible,
+    UseReducerHandle,
+};
+
+use crate::utils::state::PasswordFor;
 
 pub enum ContextAction {
-    AddWallet { wallet_name: String, mnemonic: String },
+    PasswordModal { password_for: PasswordFor },
+    InputPassword { password: String },
+    ClearPassword,
 }
 
 #[derive(Default, PartialEq, Clone)]
 pub struct UserState {
-    pub wallet_name: String,
-    pub mnemonic: String,
+    pub password: Option<String>,
+    pub password_for: Option<PasswordFor>,
 }
 
 impl Reducible for UserState {
-    /// Reducer Action Type
     type Action = ContextAction;
 
-    /// Reducer Function
     fn reduce(self: Rc<Self>, action: Self::Action) -> Rc<Self> {
-        let (wallet_name, mnemonic) = match action {
-            ContextAction::AddWallet { wallet_name, mnemonic } => (wallet_name, mnemonic),
-        };
-        Self { wallet_name, mnemonic }.into()
+        match action {
+            ContextAction::InputPassword { password } => Self {
+                password: Some(password),
+                ..UserState::default()
+            },
+            ContextAction::PasswordModal { password_for } => Self {
+                password_for: Some(password_for),
+                ..UserState::default()
+            },
+            ContextAction::ClearPassword => UserState::default(),
+        }
+        .into()
     }
 }
 
@@ -35,7 +48,7 @@ pub struct UserContextProviderProps {
 #[function_component]
 pub fn UserContextProvider(props: &UserContextProviderProps) -> Html {
     let reducer = use_reducer(UserState::default);
-    
+
     html! {
         <ContextProvider<UserContext> context={reducer}>
             {props.children.clone()}

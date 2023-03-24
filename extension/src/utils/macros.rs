@@ -2,7 +2,7 @@ macro_rules! with_error_msg {
     ($result:expr, $error_set:stmt) => {
         match $result {
             Ok(_) => {},
-            Err(_) => { 
+            Err(_) => {
                 $error_set
                 return;
             }

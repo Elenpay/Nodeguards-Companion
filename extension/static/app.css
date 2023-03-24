@@ -8,7 +8,8 @@ body {
     background-color: #011936;
 }
 
-input, select {
+input,
+select {
     color: white;
     border: 1px solid #51A3A3;
     border-radius: 5px;
@@ -26,11 +27,16 @@ button {
     margin: 5px 0;
 }
 
+button:disabled {
+    opacity: 0.5;
+}
+
 ol {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    height: 490px;
+    height: 487px;
+    margin-bottom: -20px
 }
 
 li {
@@ -68,6 +74,22 @@ li {
 .display-field {
     margin: 5px 0;
 }
-.display-field > strong {
+
+.display-field>strong {
     margin-right: 5px;
+}
+
+.modal {
+    position: fixed;
+    width: 50%;
+    top: 18%;
+    left: 25%;
+
+    border: 1px solid #51A3A3;
+    border-radius: 5px;
+    background-color: #011936;
+
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
 }

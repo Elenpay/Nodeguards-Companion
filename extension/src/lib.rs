@@ -1,26 +1,18 @@
-pub mod context;
-pub mod utils;
+pub mod app;
 pub mod components;
+pub mod context;
 pub mod features;
 pub mod switch;
+pub mod utils;
 
+use anyhow::{anyhow, Result};
+use app::App;
+use js_sys::{Function, Reflect};
 use serde::Deserialize;
+use switch::Route;
 use utils::events::{EventManager, State};
 use wasm_bindgen::prelude::*;
-use yew::prelude::*;
-use yew_router::{prelude::*};
-use switch::{switch, Route};
-
-#[function_component]
-fn App() -> Html {
-    html! {
-        <div class="app">
-            <BrowserRouter>
-                <Switch<Route> render={switch} />
-            </BrowserRouter>
-        </div>
-    }
-}
+use web_sys::window;
 
 #[wasm_bindgen(start)]
 fn main() {
@@ -42,5 +34,17 @@ pub fn approve_psbt(value: JsValue) {
     }
 }
 
-#[wasm_bindgen]
-extern { fn pastePSBT(value: JsValue); }
+pub fn paste_psbt(psbt: &str) -> Result<()> {
+    let window = window().ok_or(anyhow!("Window not found"))?;
+    let paste_value = Reflect::get(&window, &JsValue::from_str("pastePSBT"))
+        .map_err(|_| anyhow!("Error while getting JS function"))?;
+
+    let paste_function = paste_value
+        .dyn_ref::<Function>()
+        .ok_or(anyhow!("Cast from JS to Rust invalid"))?;
+
+    paste_function
+        .call1(&JsValue::undefined(), &psbt.into())
+        .map(|_| ())
+        .map_err(|_| anyhow!("Error while calling JS function"))
+}

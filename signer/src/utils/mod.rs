@@ -1,2 +1,2 @@
-pub mod encryption;
 pub mod base64;
+pub mod encryption;

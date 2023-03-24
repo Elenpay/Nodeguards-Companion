@@ -4,8 +4,9 @@ use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
 use crate::{
-    utils::{storage::LocalStorage, macros::with_error_msg}, 
-    components::text_input::TextInput, switch::Route
+    components::text_input::TextInput,
+    switch::Route,
+    utils::{macros::with_error_msg, storage::LocalStorage},
 };
 
 #[function_component(CreateAccount)]
@@ -15,10 +16,10 @@ pub fn create_account() -> Html {
     let password = use_state(|| "".to_string());
     let confirm_password = use_state(|| "".to_string());
     let error = use_state(|| "".to_string());
-    let name_value= (*name).clone();
-    let password_value= (*password).clone();
-    let confirm_password_value= (*confirm_password).clone();
-    let error_value= (*error).clone();
+    let name_value = (*name).clone();
+    let password_value = (*password).clone();
+    let confirm_password_value = (*confirm_password).clone();
+    let error_value = (*error).clone();
 
     let onclick = {
         let name = name_value.clone();
@@ -27,7 +28,10 @@ pub fn create_account() -> Html {
         Callback::from(move |_: MouseEvent| {
             let mut storage = UserStorage::read(LocalStorage::default());
 
-            if name.trim().is_empty() || password.trim().is_empty() || confirm_password.trim().is_empty() {
+            if name.trim().is_empty()
+                || password.trim().is_empty()
+                || confirm_password.trim().is_empty()
+            {
                 error.set("All fields must be set".into());
                 return;
             }
@@ -37,9 +41,12 @@ pub fn create_account() -> Html {
             }
 
             storage.name = Some(name.trim().to_string());
-            
+
             let password_set = storage.set_password(&password);
-            with_error_msg!(password_set, error.set("Error while setting password".to_string()));
+            with_error_msg!(
+                password_set,
+                error.set("Error while setting password".to_string())
+            );
 
             let stored = storage.save();
             with_error_msg!(stored, error.set("Error while storing account".to_string()));
