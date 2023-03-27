@@ -1,5 +1,6 @@
 const path = require("path");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
   mode: process.env.NODE_ENV || "development",
@@ -12,18 +13,19 @@ module.exports = {
   },
   module: {
     rules: [
-      { 
+      {
         test: /\.tsx?$/,
         loader: "ts-loader"
       },
     ]
   },
   plugins: [
+    new CleanWebpackPlugin(),
     new CopyWebpackPlugin({
       patterns: [
         { from: "static", to: "." },
         { from: "node_modules/webextension-polyfill/dist/browser-polyfill.min.js", to: "." },
-        
+
       ]
     })
   ],

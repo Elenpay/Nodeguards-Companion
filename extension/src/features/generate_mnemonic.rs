@@ -5,11 +5,9 @@ use crate::utils::helpers::get_clipboard;
 use crate::utils::macros::with_error_msg;
 use crate::utils::state::PasswordFor;
 use crate::utils::storage::LocalStorage;
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use signer::storage::UserStorage;
 use signer::wallet::Wallet;
-use wasm_bindgen::JsCast;
-use web_sys::{console, window, ClipboardEvent};
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
