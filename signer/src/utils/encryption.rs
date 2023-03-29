@@ -13,14 +13,14 @@ pub(crate) const AEAD_ALGORITHM_KEY_SIZE_BYTES: usize = 32;
 pub(crate) const AEAD_NONCE_SIZE_BYTES: usize = 12;
 
 fn argon2_config<'a>() -> argon2::Config<'a> {
-    return argon2::Config {
+    argon2::Config {
         variant: argon2::Variant::Argon2id,
         hash_length: 32,
         lanes: 8,
         mem_cost: 16 * 1024,
         time_cost: 8,
         ..Default::default()
-    };
+    }
 }
 
 pub fn get_encryption_key(salt: &[u8; 32], password: &str) -> Result<Vec<u8>> {

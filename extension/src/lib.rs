@@ -1,3 +1,9 @@
+#![warn(
+     clippy::all,
+     //clippy::pedantic,
+     clippy::nursery,
+)]
+
 pub mod app;
 pub mod components;
 pub mod features;
@@ -33,13 +39,13 @@ pub fn approve_psbt(value: JsValue) {
 }
 
 pub fn paste_psbt(psbt: &str) -> Result<()> {
-    let window = window().ok_or(anyhow!("Window not found"))?;
+    let window = window().ok_or_else(|| anyhow!("Window not found"))?;
     let paste_value = Reflect::get(&window, &JsValue::from_str("pastePSBT"))
         .map_err(|_| anyhow!("Error while getting JS function"))?;
 
     let paste_function = paste_value
         .dyn_ref::<Function>()
-        .ok_or(anyhow!("Cast from JS to Rust invalid"))?;
+        .ok_or_else(|| anyhow!("Cast from JS to Rust invalid"))?;
 
     paste_function
         .call1(&JsValue::undefined(), &psbt.into())

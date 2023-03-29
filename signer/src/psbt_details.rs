@@ -8,16 +8,19 @@ pub enum Action {
     Withdrawal,
 }
 
+#[derive(Default)]
 pub struct PSBTDetails {
     pub tx_id: String,
     pub fee: u64,
 }
 
-impl PSBTDetails {
-    pub fn from_str(psbt_64: &str) -> Self {
-        let psbt = PartiallySignedTransaction::from_str(psbt_64).unwrap();
+impl FromStr for PSBTDetails {
+    type Err = anyhow::Error;
+
+    fn from_str(psbt_64: &str) -> Result<Self, Self::Err> {
+        let psbt = PartiallySignedTransaction::from_str(psbt_64)?;
         let tx_id = psbt.clone().extract_tx().txid().to_hex();
         let fee = psbt.fee_amount().unwrap_or_default();
-        Self { tx_id, fee }
+        Ok(Self { tx_id, fee })
     }
 }

@@ -68,7 +68,7 @@ impl Wallet {
 
         let secret_key = get_encryption_key(&salt, password)?;
 
-        let decrypted_secret = decrypt(secret_key[..].try_into()?, nonce, &encrypted_secret)?;
+        let decrypted_secret = decrypt(secret_key[..].try_into()?, nonce, encrypted_secret)?;
 
         match self.secret {
             Some(Secret::Seed(_)) => {
@@ -99,7 +99,7 @@ impl Wallet {
 
         let secret_key = get_encryption_key(&salt, password)?;
 
-        let decrypted_secret = decrypt(secret_key[..].try_into()?, nonce, &encrypted_secret)?;
+        let decrypted_secret = decrypt(secret_key[..].try_into()?, nonce, encrypted_secret)?;
 
         Ok(decrypted_secret)
     }

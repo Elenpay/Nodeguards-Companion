@@ -9,6 +9,6 @@ fn main() {
     let mut wallet = Wallet::default();
     wallet.from_seed_str("wallet 1", "solar goat auto bachelor chronic input twin depth fork scale divorce fury mushroom column image sauce car public artist announce treat spend jacket physical", "Qwerty123").unwrap();
 
-    let signed_psbt = decode_psbt_and_sign(&args.next().unwrap(), &mut wallet, &"Querty123");
+    let signed_psbt = decode_psbt_and_sign(&args.next().unwrap(), &mut wallet, "Querty123");
     println!("{}", signed_psbt.unwrap())
 }

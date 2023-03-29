@@ -71,8 +71,13 @@ impl UserStorage {
         if self.password.is_none() {
             return Ok(false);
         }
-        argon2::verify_encoded(&self.password.as_ref().unwrap(), password)
-            .map_err(|e| anyhow!("Failed to verify password: {}", e))
+        argon2::verify_encoded(
+            self.password
+                .as_ref()
+                .ok_or(anyhow!("Password not found"))?,
+            password,
+        )
+        .map_err(|e| anyhow!("Failed to verify password: {}", e))
     }
 
     pub fn get_default_wallet(&self) -> String {

@@ -15,7 +15,7 @@ use yew_router::prelude::use_navigator;
 #[function_component(ImportFromSeed)]
 pub fn import_from_seed() -> Html {
     let navigator = use_navigator().unwrap();
-    let seed = use_state(|| Vec::new());
+    let seed = use_state(Vec::new);
     let wallet_name = use_state(String::default);
     let error = use_state(String::default);
     let popup_visible = use_state(|| false);
@@ -30,7 +30,7 @@ pub fn import_from_seed() -> Html {
             let clipboard_event = e.dyn_into::<ClipboardEvent>().ok();
             let clipboard = clipboard_event
                 .and_then(|e| e.clipboard_data())
-                .ok_or(anyhow!("No clipboard found"));
+                .ok_or_else(|| anyhow!("No clipboard found"));
             let result = clipboard
                 .and_then(|c| {
                     c.get_data("text/plain")
@@ -38,7 +38,7 @@ pub fn import_from_seed() -> Html {
                 })
                 .map(|t| {
                     t.split_whitespace()
-                        .map(|w| w.to_string())
+                        .map(ToString::to_string)
                         .collect::<Vec<String>>()
                 })
                 .map(|v| seed.set(v));
@@ -83,7 +83,6 @@ pub fn import_from_seed() -> Html {
     let onsave = {
         let wallet_name_value = wallet_name_value.clone();
         let seed = seed_value.clone();
-        let navigator = navigator.clone();
         let popup_visible = popup_visible.clone();
         Callback::from(move |password: String| {
             let mut storage = UserStorage::read(LocalStorage::default());
@@ -121,7 +120,7 @@ pub fn import_from_seed() -> Html {
             <TextInput disabled={*popup_visible} value={wallet_name_value} onchange={on_change} placeholder="Input your wallet's name"/>
             <ol {onpaste}>
                 {
-                    seed_value.to_owned().iter().enumerate().map(|(index, word)| {
+                    seed_value.clone().iter().enumerate().map(|(index, word)| {
                         html!{
                             <li>
                                 <input disabled={*popup_visible} key={index} value={word.to_string()}/>

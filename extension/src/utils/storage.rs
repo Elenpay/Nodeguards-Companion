@@ -22,7 +22,7 @@ impl Store for LocalStorage {
         let storage = get_storage()?;
 
         storage
-            .get_item(&key)
+            .get_item(key)
             .ok()
             .flatten()
             .context("Error while getting item from storage")
@@ -32,7 +32,7 @@ impl Store for LocalStorage {
         let storage = get_storage()?;
 
         storage
-            .set_item(&key, data)
+            .set_item(key, data)
             .map_err(|_| anyhow!("Error setting data in storage"))
     }
 }

@@ -12,8 +12,7 @@ use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
 fn generate() -> Result<Vec<String>> {
-    Wallet::generate_seed()
-        .and_then(|words| Ok(words.split_whitespace().map(|w| w.to_string()).collect()))
+    Wallet::generate_seed().map(|words| words.split_whitespace().map(ToString::to_string).collect())
 }
 
 #[function_component(GenerateSeed)]
@@ -28,10 +27,9 @@ pub fn generate_seed() -> Html {
     let error_value = (*error).clone();
 
     let on_click_generate = {
-        let seed = seed.clone();
         let error = error.clone();
         Callback::from(move |_: MouseEvent| {
-            let seed_str = generate().and_then(|words| Ok(seed.set(words)));
+            let seed_str = generate().map(|words| seed.set(words));
             with_error_msg!(
                 seed_str,
                 error.set("Error while generating seed".to_string())
@@ -42,7 +40,7 @@ pub fn generate_seed() -> Html {
     let on_click_copy = {
         let seed = seed_value.clone();
         Callback::from(move |_: MouseEvent| {
-            let _ = get_clipboard().and_then(|c| Ok(c.write_text(&seed.join(" "))));
+            let _ = get_clipboard().map(|c| c.write_text(&seed.join(" ")));
         })
     };
 
@@ -83,7 +81,6 @@ pub fn generate_seed() -> Html {
     let onsave = {
         let wallet_name_value = wallet_name_value.clone();
         let seed = seed_value.clone();
-        let navigator = navigator.clone();
         let popup_visible = popup_visible.clone();
         Callback::from(move |password: String| {
             let mut storage = UserStorage::read(LocalStorage::default());
@@ -121,7 +118,7 @@ pub fn generate_seed() -> Html {
             <TextInput value={wallet_name_value} onchange={on_change} placeholder="Input your wallet's name"/>
             <ol>
                 {
-                    seed_value.to_owned().iter().enumerate().map(|(index, word)| {
+                    seed_value.clone().iter().enumerate().map(|(index, word)| {
                         html!{
                             <li>
                                 <input disabled={true} key={index} value={word.to_string()}/>

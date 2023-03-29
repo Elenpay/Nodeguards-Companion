@@ -24,7 +24,7 @@ pub fn input_password_modal(props: &Props) -> Html {
     let password_value = (*password).clone();
     let error_value = (*error).clone();
 
-    let route = props.password_for.clone();
+    let route = props.password_for;
     let visible = props.visible;
     use_effect_with_deps(
         move |_| {
@@ -66,7 +66,7 @@ pub fn input_password_modal(props: &Props) -> Html {
             }
 
             onsave.emit((*password).clone());
-            password.set(String::default())
+            password.set(String::default());
         })
     };
 
@@ -84,11 +84,10 @@ pub fn input_password_modal(props: &Props) -> Html {
     };
 
     let onclick_cancel = {
-        let password = password.clone();
         let oncancel = props.oncancel.clone();
         Callback::from(move |_: MouseEvent| {
             oncancel.emit(());
-            password.set(String::default())
+            password.set(String::default());
         })
     };
 
@@ -105,14 +104,12 @@ pub fn input_password_modal(props: &Props) -> Html {
                 I understand that if I remove this extension my seed will be lost forever"#}</label>
             </div>
         },
-        PasswordFor::SigningPSBT => html! {},
-        PasswordFor::RevalSecret => html! {},
+        PasswordFor::SigningPSBT | PasswordFor::RevalSecret => html! {},
     };
 
     let save_disabled = match props.password_for {
         PasswordFor::ImportingSecret => !*checkbox_state || password_value.is_empty(),
-        PasswordFor::SigningPSBT => password_value.is_empty(),
-        PasswordFor::RevalSecret => password_value.is_empty(),
+        PasswordFor::SigningPSBT | PasswordFor::RevalSecret => password_value.is_empty(),
     };
 
     html! {

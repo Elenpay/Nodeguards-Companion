@@ -17,9 +17,9 @@ pub fn home() -> Html {
     let popup_visible = use_state(|| false);
     let derivation = use_state(String::default);
 
-    if !storage.has_password() || !storage.name.is_some() {
+    if !storage.has_password() || storage.name.is_none() {
         navigator.push(&Route::CreateAccount);
-    } else if storage.wallets.len() == 0 {
+    } else if storage.wallets.is_empty() {
         navigator.push(&ImportWalletRoute::ImportWalletHome);
     }
 
@@ -29,7 +29,6 @@ pub fn home() -> Html {
     });
 
     let onclick_import = {
-        let navigator = navigator.clone();
         Callback::from(move |_: MouseEvent| {
             navigator.push(&ImportWalletRoute::ImportWalletHome);
         })
@@ -42,7 +41,7 @@ pub fn home() -> Html {
             if revealed_secret.is_empty() {
                 popup_visible.set(true);
             } else {
-                revealed_secret.set(String::default())
+                revealed_secret.set(String::default());
             }
         })
     };
@@ -53,10 +52,10 @@ pub fn home() -> Html {
         let derivation = derivation.clone();
         Callback::from(move |password: String| {
             let mut storage = UserStorage::read(LocalStorage::default());
-            let secret_str = storage.get_wallet_mut(&*selected_wallet).and_then(|w| {
+            let secret_str = storage.get_wallet_mut(&selected_wallet).and_then(|w| {
                 w.reveal_secret(&password)
                     .ok()
-                    .and_then(|s| Some((s, w.derivation.to_string())))
+                    .map(|s| (s, w.derivation.to_string()))
             });
 
             match secret_str {
@@ -94,9 +93,10 @@ pub fn home() -> Html {
         }
     }
 
-    let reveal_message = match revealed_secret.is_empty() {
-        true => "Reveal Secret",
-        false => "Hide Secret",
+    let reveal_message = if revealed_secret.is_empty() {
+        "Reveal Secret"
+    } else {
+        "Hide Secret"
     };
 
     html! {

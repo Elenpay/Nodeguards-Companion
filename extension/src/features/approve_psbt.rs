@@ -7,6 +7,7 @@ use crate::{
 };
 use anyhow::anyhow;
 use signer::{psbt_details::PSBTDetails, signer::decode_psbt_and_sign, storage::UserStorage};
+use std::str::FromStr;
 use web_sys::{window, HtmlSelectElement};
 use yew::prelude::*;
 use yew_router::prelude::{use_location, use_navigator};
@@ -49,7 +50,7 @@ pub fn approve_psbt() -> Html {
             let select_node_ref = select_node_ref.clone();
             Callback::from(move |_: Event| {
                 if let Some(target) = select_node_ref.cast::<HtmlSelectElement>() {
-                    selected_wallet.set(target.value())
+                    selected_wallet.set(target.value());
                 }
             })
         };
@@ -60,7 +61,6 @@ pub fn approve_psbt() -> Html {
         };
 
         let onsave = {
-            let navigator = navigator.clone();
             let popup_visible = popup_visible.clone();
             let psbt = psbt.clone();
             let selected_wallet_value = selected_wallet_value.clone();
@@ -69,7 +69,7 @@ pub fn approve_psbt() -> Html {
 
                 let result = storage
                     .get_wallet_mut(&selected_wallet_value)
-                    .ok_or(anyhow!("Wallet not found"))
+                    .ok_or_else(|| anyhow!("Wallet not found"))
                     .and_then(|wallet| decode_psbt_and_sign(&psbt, wallet, &password))
                     .map_err(|_| anyhow!("Error while signing PSBT"))
                     .and_then(|signed_psbt| paste_psbt(&signed_psbt))
@@ -80,7 +80,7 @@ pub fn approve_psbt() -> Html {
                         navigator.push(&Route::Home);
                         window().unwrap().close().unwrap();
                     }
-                    Err(e) => error.set(format!("{}", e)),
+                    Err(e) => error.set(format!("{e}")),
                 }
                 popup_visible.set(false);
             })
@@ -93,7 +93,7 @@ pub fn approve_psbt() -> Html {
             })
         };
 
-        let psbt = PSBTDetails::from_str(&psbt.to_string());
+        let psbt = PSBTDetails::from_str(&psbt).unwrap_or_default();
         return html! {
             <>
                 <h class="title">{"Approve PSBT"}</h>

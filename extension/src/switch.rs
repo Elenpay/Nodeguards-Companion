@@ -6,7 +6,7 @@ use crate::features::{
 use yew::{function_component, html, Html};
 use yew_router::{prelude::use_navigator, Routable, Switch};
 
-#[derive(Clone, Routable, PartialEq)]
+#[derive(Clone, Routable, PartialEq, Eq, Copy)]
 pub enum Route {
     #[at("/home")]
     Home,
@@ -23,7 +23,7 @@ pub enum Route {
     NotFound,
 }
 
-#[derive(Clone, Routable, PartialEq)]
+#[derive(Clone, Routable, PartialEq, Eq, Copy)]
 pub enum ImportWalletRoute {
     #[at("/import")]
     ImportWalletHome,
@@ -46,7 +46,7 @@ pub fn redirect() -> Html {
     html! {}
 }
 
-pub fn switch_main(routes: Route) -> Html {
+pub fn switch(routes: Route) -> Html {
     let render_route = match routes {
         Route::Home => html! { <Home /> },
         Route::CreateAccount => html! { <CreateAccount /> },

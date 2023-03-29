@@ -1,4 +1,4 @@
-use crate::switch::{switch_main, Route};
+use crate::switch::{switch, Route};
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -7,7 +7,7 @@ pub fn app() -> Html {
     html! {
         <div class="app">
             <BrowserRouter>
-                <Switch<Route> render={switch_main} />
+                <Switch<Route> render={switch} />
             </BrowserRouter>
         </div>
     }

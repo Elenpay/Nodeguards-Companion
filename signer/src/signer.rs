@@ -12,7 +12,7 @@ use std::str::FromStr;
 use crate::utils::base64::to_base64;
 use crate::wallet::Wallet;
 
-fn set_sighash_type<'a>(signature: Signature, input: &Input) -> EcdsaSig {
+fn set_sighash_type(signature: Signature, input: &Input) -> EcdsaSig {
     let sighash_type = get_sighash_type(input);
     let mut sig = EcdsaSig::sighash_all(signature);
     sig.hash_ty = sighash_type;
@@ -48,9 +48,9 @@ fn sign_psbt(
             .value;
         let sighash = sighash_cache.segwit_signature_hash(
             index,
-            &witness_script,
+            witness_script,
             amount,
-            get_sighash_type(&input),
+            get_sighash_type(input),
         )?;
 
         let mut input_keypairs = Vec::new();
@@ -63,7 +63,7 @@ fn sign_psbt(
             input_keypairs.push(parent_xprv.to_keypair(&secp));
         }
 
-        if input_keypairs.len() == 0 {
+        if input_keypairs.is_empty() {
             return Err(anyhow!("No private keys to sign this psbt"));
         }
 
@@ -72,7 +72,7 @@ fn sign_psbt(
             let signature = secp.sign_ecdsa(message, &keypair.secret_key());
             input.partial_sigs.insert(
                 PublicKey::new(keypair.public_key()),
-                set_sighash_type(signature, &input),
+                set_sighash_type(signature, input),
             );
 
             secp.verify_ecdsa(message, &signature, &keypair.public_key())?;
@@ -83,7 +83,7 @@ fn sign_psbt(
 }
 
 pub fn decode_psbt_and_sign(psbt_64: &str, wallet: &mut Wallet, password: &str) -> Result<String> {
-    let psbt = PartiallySignedTransaction::from_str(&psbt_64)?;
+    let psbt = PartiallySignedTransaction::from_str(psbt_64)?;
 
     let xprv = wallet.get_xprv(password)?;
     let signed_psbt = sign_psbt(psbt, xprv)?;

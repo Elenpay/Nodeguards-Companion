@@ -39,10 +39,10 @@ pub fn import_from_xprv() -> Html {
                 error.set("There is already a wallet with that name".into());
                 return;
             }
-            match Wallet::validate(&*xprv, &*derivation) {
+            match Wallet::validate(&xprv, &derivation) {
                 Ok(_) => {}
                 Err(e) => {
-                    error.set(format!("{}", e).into());
+                    error.set(format!("{e}"));
                     return;
                 }
             }
@@ -72,13 +72,12 @@ pub fn import_from_xprv() -> Html {
         let wallet_name_value = wallet_name_value.clone();
         let xprv = xprv_value.clone();
         let derivation = derivation_value.clone();
-        let navigator = navigator.clone();
         let popup_visible = popup_visible.clone();
         Callback::from(move |password: String| {
             let mut storage = UserStorage::read(LocalStorage::default());
             let mut wallet = Wallet::default();
 
-            let parsed = wallet.from_xprv_str(&wallet_name_value, &*xprv, &*derivation, &password);
+            let parsed = wallet.from_xprv_str(&wallet_name_value, &xprv, &derivation, &password);
 
             if parsed.is_err() {
                 error.set("Error while parsing secret".to_string());
