@@ -1,5 +1,5 @@
 use crate::{
-    context::{ContextAction, UserContext},
+    features::input_password_modal::InputPasswordModal,
     paste_psbt,
     switch::Route,
     utils::{events::State, state::PasswordFor, storage::LocalStorage},
@@ -13,15 +13,14 @@ use yew_router::prelude::{use_location, use_navigator};
 
 #[function_component(ApprovePSBT)]
 pub fn approve_psbt() -> Html {
-    let context = use_context::<UserContext>().unwrap();
     let navigator = use_navigator().unwrap();
     let location = use_location().unwrap();
     let state = location.state::<State>().unwrap();
     let storage = UserStorage::read(LocalStorage::default());
     let default_wallet = storage.get_default_wallet();
     let selected_wallet = use_state(|| default_wallet);
-    let error = use_state(|| "".to_string());
-    let disable_button = use_state(|| false);
+    let error = use_state(String::default);
+    let popup_visible = use_state(|| false);
     let selected_wallet_value = (*selected_wallet).clone();
     let error_value = (*error).clone();
     let select_node_ref = use_node_ref();
@@ -40,13 +39,9 @@ pub fn approve_psbt() -> Html {
         }
         let psbt = data.psbt.clone().unwrap();
         let onclick = {
-            let context = context.clone();
-            let disable_button = disable_button.clone();
+            let popup_visible = popup_visible.clone();
             Callback::from(move |_: MouseEvent| {
-                disable_button.set(true);
-                context.dispatch(ContextAction::PasswordModal {
-                    password_for: PasswordFor::SigningPSBT,
-                })
+                popup_visible.set(true);
             })
         };
 
@@ -59,27 +54,43 @@ pub fn approve_psbt() -> Html {
             })
         };
 
-        if let Some(password) = context.password.as_ref() {
-            let mut storage = UserStorage::read(LocalStorage::default());
+        let onclick_goback = {
+            let navigator = navigator.clone();
+            Callback::from(move |_: MouseEvent| navigator.back())
+        };
 
-            let result = storage
-                .get_wallet_mut(&selected_wallet_value)
-                .ok_or(anyhow!("Wallet not found"))
-                .and_then(|wallet| decode_psbt_and_sign(&psbt, wallet, &password))
-                .map_err(|_| anyhow!("Error while signing PSBT"))
-                .and_then(|signed_psbt| paste_psbt(&signed_psbt))
-                .map_err(|_| anyhow!("Error while pasting PSBT"));
+        let onsave = {
+            let navigator = navigator.clone();
+            let popup_visible = popup_visible.clone();
+            let psbt = psbt.clone();
+            let selected_wallet_value = selected_wallet_value.clone();
+            Callback::from(move |password: String| {
+                let mut storage = UserStorage::read(LocalStorage::default());
 
-            context.dispatch(ContextAction::ClearPassword);
+                let result = storage
+                    .get_wallet_mut(&selected_wallet_value)
+                    .ok_or(anyhow!("Wallet not found"))
+                    .and_then(|wallet| decode_psbt_and_sign(&psbt, wallet, &password))
+                    .map_err(|_| anyhow!("Error while signing PSBT"))
+                    .and_then(|signed_psbt| paste_psbt(&signed_psbt))
+                    .map_err(|_| anyhow!("Error while pasting PSBT"));
 
-            match result {
-                Ok(_) => {
-                    navigator.push(&Route::Home);
-                    window().unwrap().close().unwrap();
+                match result {
+                    Ok(_) => {
+                        navigator.push(&Route::Home);
+                        window().unwrap().close().unwrap();
+                    }
+                    Err(e) => error.set(format!("{}", e)),
                 }
-                Err(e) => error.set(format!("{}", e)),
-            }
-            disable_button.set(false);
+                popup_visible.set(false);
+            })
+        };
+
+        let oncancel = {
+            let popup_visible = popup_visible.clone();
+            Callback::from(move |_| {
+                popup_visible.set(false);
+            })
         };
 
         let psbt = PSBTDetails::from_str(&psbt.to_string());
@@ -116,7 +127,16 @@ pub fn approve_psbt() -> Html {
                 }
                 </select>
                 <div class="error">{error_value}</div>
-                <button disabled={*disable_button} {onclick}>{"Sign"}</button>
+                <div class="button-bar">
+                    <button class="cancel" onclick={onclick_goback}>{"Go back"}</button>
+                    <button disabled={*popup_visible} {onclick}>{"Sign"}</button>
+                </div>
+                <InputPasswordModal
+                    password_for={PasswordFor::SigningPSBT}
+                    visible={*popup_visible}
+                    onsave={onsave}
+                    oncancel={oncancel}
+                />
             </>
         };
     }

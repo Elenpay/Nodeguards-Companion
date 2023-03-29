@@ -5,6 +5,7 @@ pub struct PSBTWithWallet {
 
 #[derive(Debug, PartialEq, Clone, Copy)]
 pub enum PasswordFor {
-    ImportingMnemonic,
+    ImportingSecret,
     SigningPSBT,
+    RevalSecret,
 }

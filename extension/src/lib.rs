@@ -1,6 +1,5 @@
 pub mod app;
 pub mod components;
-pub mod context;
 pub mod features;
 pub mod switch;
 pub mod utils;
@@ -9,7 +8,6 @@ use anyhow::{anyhow, Result};
 use app::App;
 use js_sys::{Function, Reflect};
 use serde::Deserialize;
-use switch::Route;
 use utils::events::{EventManager, State};
 use wasm_bindgen::prelude::*;
 use web_sys::window;

@@ -1,20 +1,26 @@
 use crate::{
-    switch::Route,
-    utils::{events::EventManager, storage::LocalStorage},
+    features::input_password_modal::InputPasswordModal,
+    switch::{ImportWalletRoute, Route},
+    utils::{events::EventManager, state::PasswordFor, storage::LocalStorage},
 };
 use signer::storage::UserStorage;
 use web_sys::MouseEvent;
-use yew::{function_component, html, Callback, Html};
+use yew::{function_component, html, use_state, Callback, Html};
 use yew_router::prelude::use_navigator;
 
 #[function_component(Home)]
 pub fn home() -> Html {
     let navigator = use_navigator().unwrap();
     let storage = UserStorage::read(LocalStorage::default());
+    let selected_wallet = use_state(|| storage.get_default_wallet());
+    let revealed_secret = use_state(String::default);
+    let popup_visible = use_state(|| false);
+    let derivation = use_state(String::default);
+
     if !storage.has_password() || !storage.name.is_some() {
         navigator.push(&Route::CreateAccount);
     } else if storage.wallets.len() == 0 {
-        navigator.push(&Route::ImportWallet);
+        navigator.push(&ImportWalletRoute::ImportWalletHome);
     }
 
     let nav = navigator.clone();
@@ -22,9 +28,76 @@ pub fn home() -> Html {
         nav.push_with_state(&Route::ApprovePSBT, data);
     });
 
-    let onclick = Callback::from(move |_: MouseEvent| {
-        navigator.push(&Route::ImportWallet);
-    });
+    let onclick_import = {
+        let navigator = navigator.clone();
+        Callback::from(move |_: MouseEvent| {
+            navigator.push(&ImportWalletRoute::ImportWalletHome);
+        })
+    };
+
+    let onclick_reveal = {
+        let revealed_secret = revealed_secret.clone();
+        let popup_visible = popup_visible.clone();
+        Callback::from(move |_: MouseEvent| {
+            if revealed_secret.is_empty() {
+                popup_visible.set(true);
+            } else {
+                revealed_secret.set(String::default())
+            }
+        })
+    };
+
+    let onsave = {
+        let popup_visible = popup_visible.clone();
+        let revealed_secret = revealed_secret.clone();
+        let derivation = derivation.clone();
+        Callback::from(move |password: String| {
+            let mut storage = UserStorage::read(LocalStorage::default());
+            let secret_str = storage.get_wallet_mut(&*selected_wallet).and_then(|w| {
+                w.reveal_secret(&password)
+                    .ok()
+                    .and_then(|s| Some((s, w.derivation.to_string())))
+            });
+
+            match secret_str {
+                Some((s, d)) => {
+                    revealed_secret.set(s);
+                    derivation.set(d);
+                }
+                None => revealed_secret.set("No secret found".to_string()),
+            }
+
+            popup_visible.set(false);
+        })
+    };
+
+    let oncancel = {
+        let popup_visible = popup_visible.clone();
+        Callback::from(move |_| {
+            popup_visible.set(false);
+        })
+    };
+
+    let mut secret_data = html! {};
+    if !revealed_secret.is_empty() {
+        let revealed_secret = (*revealed_secret).clone();
+        let derivation = (*derivation).clone();
+        secret_data = html! {
+            <>
+                <hr />
+                <label>{"Secret:"}</label>
+                <textarea disabled={true} value={revealed_secret}/>
+                <hr />
+                <label>{"Derivation:"}</label>
+                <input disabled={true} value={derivation}/>
+            </>
+        }
+    }
+
+    let reveal_message = match revealed_secret.is_empty() {
+        true => "Reveal Secret",
+        false => "Hide Secret",
+    };
 
     html! {
         <>
@@ -40,8 +113,15 @@ pub fn home() -> Html {
                 }).collect::<Html>()
                 }
             </select>
-            <button>{"Reveal XPRV (TODO)"}</button>
-            <button {onclick}>{"Import another wallet"}</button>
+            {secret_data}
+            <button onclick={onclick_reveal}>{reveal_message}</button>
+            <button onclick={onclick_import}>{"Import another wallet"}</button>
+            <InputPasswordModal
+                password_for={PasswordFor::RevalSecret}
+                visible={*popup_visible}
+                onsave={onsave}
+                oncancel={oncancel}
+            />
         </>
     }
 }

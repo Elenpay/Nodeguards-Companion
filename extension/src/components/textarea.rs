@@ -1,6 +1,6 @@
 use anyhow::{anyhow, Context, Result};
 use wasm_bindgen::JsCast;
-use web_sys::{Event, HtmlInputElement, InputEvent};
+use web_sys::{Event, HtmlTextAreaElement, InputEvent};
 use yew::prelude::*;
 
 #[derive(Clone, PartialEq, Properties)]
@@ -18,14 +18,14 @@ fn get_value_from_input_event(e: InputEvent) -> Result<String> {
         .dyn_into()
         .map_err(|_| anyhow!("Error converting to event"))?;
     let event_target = event.target().context("Error accessing tareget")?;
-    let target: HtmlInputElement = event_target
+    let target: HtmlTextAreaElement = event_target
         .dyn_into()
         .map_err(|_| anyhow!("Error accessing input element"))?;
     Ok(target.value())
 }
 
-#[function_component(TextInput)]
-pub fn text_input(props: &Props) -> Html {
+#[function_component(TextArea)]
+pub fn textarea(props: &Props) -> Html {
     let Props {
         value,
         onchange,
@@ -40,6 +40,6 @@ pub fn text_input(props: &Props) -> Html {
     });
 
     html! {
-        <input disabled={disabled.unwrap_or_default()} {id} {value} {oninput} type={itype} placeholder={placeholder} />
+        <textarea disabled={disabled.unwrap_or_default()} {id} {value} {oninput} type={itype} placeholder={placeholder} />
     }
 }

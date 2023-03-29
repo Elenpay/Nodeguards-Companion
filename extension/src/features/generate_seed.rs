@@ -1,0 +1,148 @@
+use crate::components::text_input::TextInput;
+use crate::features::input_password_modal::InputPasswordModal;
+use crate::switch::Route;
+use crate::utils::helpers::get_clipboard;
+use crate::utils::macros::with_error_msg;
+use crate::utils::state::PasswordFor;
+use crate::utils::storage::LocalStorage;
+use anyhow::Result;
+use signer::storage::UserStorage;
+use signer::wallet::Wallet;
+use yew::prelude::*;
+use yew_router::prelude::use_navigator;
+
+fn generate() -> Result<Vec<String>> {
+    Wallet::generate_seed()
+        .and_then(|words| Ok(words.split_whitespace().map(|w| w.to_string()).collect()))
+}
+
+#[function_component(GenerateSeed)]
+pub fn generate_seed() -> Html {
+    let navigator = use_navigator().unwrap();
+    let seed = use_state(|| generate().unwrap_or_default());
+    let wallet_name = use_state(String::default);
+    let error = use_state(String::default);
+    let popup_visible = use_state(|| false);
+    let mut seed_value = (*seed).clone();
+    let wallet_name_value = (*wallet_name).clone();
+    let error_value = (*error).clone();
+
+    let on_click_generate = {
+        let seed = seed.clone();
+        let error = error.clone();
+        Callback::from(move |_: MouseEvent| {
+            let seed_str = generate().and_then(|words| Ok(seed.set(words)));
+            with_error_msg!(
+                seed_str,
+                error.set("Error while generating seed".to_string())
+            );
+        })
+    };
+
+    let on_click_copy = {
+        let seed = seed_value.clone();
+        Callback::from(move |_: MouseEvent| {
+            let _ = get_clipboard().and_then(|c| Ok(c.write_text(&seed.join(" "))));
+        })
+    };
+
+    let on_click_save = {
+        let seed = seed_value.clone();
+        let wallet_name = wallet_name_value.clone();
+        let error = error.clone();
+        let popup_visible = popup_visible.clone();
+        Callback::from(move |_: MouseEvent| {
+            let storage = UserStorage::read(LocalStorage::default());
+
+            if wallet_name.is_empty() {
+                error.set("Wallet name is mandatory".into());
+            }
+
+            if storage.get_wallet_ref(&wallet_name).is_some() {
+                error.set("There is already a wallet with that name".into());
+                return;
+            }
+            if (*seed).len() != 24 {
+                error.set("Seed not properly written".into());
+                return;
+            }
+
+            popup_visible.set(true);
+        })
+    };
+
+    let on_change = Callback::from(move |value: Result<String>| {
+        let _ = value.map(|v| wallet_name.set(v));
+    });
+
+    let onclick_goback = {
+        let navigator = navigator.clone();
+        Callback::from(move |_: MouseEvent| navigator.back())
+    };
+
+    let onsave = {
+        let wallet_name_value = wallet_name_value.clone();
+        let seed = seed_value.clone();
+        let navigator = navigator.clone();
+        let popup_visible = popup_visible.clone();
+        Callback::from(move |password: String| {
+            let mut storage = UserStorage::read(LocalStorage::default());
+            let mut wallet = Wallet::default();
+
+            let parsed = wallet.from_seed_str(&wallet_name_value, &(*seed).join(" "), &password);
+
+            if parsed.is_err() {
+                error.set("Error while parsing secret".to_string());
+            }
+
+            storage.wallets.push(wallet);
+            let stored = storage.save();
+
+            if stored.is_err() {
+                error.set("Error while storing wallet".to_string());
+            } else {
+                navigator.push(&Route::Home);
+            }
+            popup_visible.set(false);
+        })
+    };
+
+    let oncancel = {
+        let popup_visible = popup_visible.clone();
+        Callback::from(move |_| {
+            popup_visible.set(false);
+        })
+    };
+
+    seed_value.resize(24, String::default());
+    html! {
+        <>
+            <h class="title">{"Import from Seed"}</h>
+            <TextInput value={wallet_name_value} onchange={on_change} placeholder="Input your wallet's name"/>
+            <ol>
+                {
+                    seed_value.to_owned().iter().enumerate().map(|(index, word)| {
+                        html!{
+                            <li>
+                                <input disabled={true} key={index} value={word.to_string()}/>
+                            </li>
+                        }
+                    }).collect::<Html>()
+                }
+            </ol>
+            <div class="error">{error_value}</div>
+            <button disabled={*popup_visible} onclick={on_click_generate}>{"Generate Again"}</button>
+            <button disabled={*popup_visible} onclick={on_click_copy}>{"Copy Seed"}</button>
+            <div class="button-bar">
+                <button class="cancel" onclick={onclick_goback}>{"Go back"}</button>
+                <button disabled={*popup_visible} onclick={on_click_save}>{"Save"}</button>
+            </div>
+            <InputPasswordModal
+                password_for={PasswordFor::ImportingSecret}
+                visible={*popup_visible}
+                onsave={onsave}
+                oncancel={oncancel}
+            />
+        </>
+    }
+}

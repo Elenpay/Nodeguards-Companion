@@ -1,8 +1,4 @@
-use crate::{
-    context::UserContextProvider,
-    features::input_password_modal::InputPasswordModal,
-    switch::{switch, Route},
-};
+use crate::switch::{switch_main, Route};
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -11,10 +7,7 @@ pub fn app() -> Html {
     html! {
         <div class="app">
             <BrowserRouter>
-                <UserContextProvider>
-                    <Switch<Route> render={switch} />
-                    <InputPasswordModal />
-                </UserContextProvider>
+                <Switch<Route> render={switch_main} />
             </BrowserRouter>
         </div>
     }

@@ -9,7 +9,8 @@ body {
 }
 
 input,
-select {
+select,
+textarea {
     color: white;
     border: 1px solid #51A3A3;
     border-radius: 5px;
@@ -19,12 +20,22 @@ select {
     margin: 5px 0px;
 }
 
+textarea {
+    height: 100px;
+    resize: none;
+}
+
+hr {
+    border: solid transparent 0px;
+}
+
 button {
     background-color: #51A3A3;
     border: 1px solid transparent;
     border-radius: 5px;
     padding: 10px;
     margin: 5px 0;
+    flex-grow: 1;
 }
 
 button:disabled {
@@ -35,16 +46,16 @@ ol {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
-    height: 487px;
-    margin-bottom: -20px
+    height: 300px;
+    /* margin-bottom: -20px */
 }
 
 li {
-    width: 50%;
+    width: 33%;
 }
 
 .app {
-    width: 500px;
+    width: 600px;
     padding: 10px;
     display: flex;
     flex-direction: column;
@@ -92,4 +103,28 @@ li {
     display: flex;
     flex-direction: column;
     padding: 20px;
+}
+
+.checkbox-container {
+    padding: 15px;
+}
+
+.checkbox-container>label {
+    font-weight: 5px;
+}
+
+.checkbox-container>input {
+    margin-right: 5px
+}
+
+.button-bar {
+    display: flex;
+}
+
+.cancel {
+    color: #51A3A3;
+    background-color: transparent;
+    border: 1px solid #51A3A3;
+    margin-right: 5px;
+    flex-grow: 1;
 }

@@ -12,10 +12,10 @@ use crate::{
 #[function_component(CreateAccount)]
 pub fn create_account() -> Html {
     let navigator = use_navigator().unwrap();
-    let name = use_state(|| "".to_string());
-    let password = use_state(|| "".to_string());
-    let confirm_password = use_state(|| "".to_string());
-    let error = use_state(|| "".to_string());
+    let name = use_state(String::default);
+    let password = use_state(String::default);
+    let confirm_password = use_state(String::default);
+    let error = use_state(String::default);
     let name_value = (*name).clone();
     let password_value = (*password).clone();
     let confirm_password_value = (*confirm_password).clone();

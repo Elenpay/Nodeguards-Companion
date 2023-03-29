@@ -1,40 +1,10 @@
 use crate::features::{
-    approve_psbt::ApprovePSBT, create_account::CreateAccount, generate_mnemonic::GenerateMnemonic,
-    home::Home, import_from_mnemonic::ImportFromMnemonic, import_wallet::ImportWallet,
-};
-use std::{
-    error::Error,
-    fmt::{Display, Formatter},
-    str::FromStr,
+    approve_psbt::ApprovePSBT, create_account::CreateAccount, generate_seed::GenerateSeed,
+    home::Home, import_from_seed::ImportFromSeed, import_from_xprv::ImportFromXprv,
+    import_wallet::ImportWallet,
 };
 use yew::{function_component, html, Html};
-use yew_router::{prelude::use_navigator, Routable};
-
-#[derive(Clone, PartialEq)]
-pub enum Mnemonic {
-    Import,
-    Generate,
-}
-
-impl Display for Mnemonic {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        match *self {
-            Mnemonic::Import => write!(f, "import"),
-            Mnemonic::Generate => write!(f, "generate"),
-        }
-    }
-}
-
-impl FromStr for Mnemonic {
-    type Err = Box<dyn Error>;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "import" => Ok(Mnemonic::Import),
-            "generate" => Ok(Mnemonic::Generate),
-            _ => Err("Variant not found".into()),
-        }
-    }
-}
+use yew_router::{prelude::use_navigator, Routable, Switch};
 
 #[derive(Clone, Routable, PartialEq)]
 pub enum Route {
@@ -42,15 +12,30 @@ pub enum Route {
     Home,
     #[at("/createaccount")]
     CreateAccount,
-    #[not_found]
-    #[at("/404")]
-    NotFound,
-    #[at("/mnemonic/:action")]
-    Mnemonic { action: Mnemonic },
-    #[at("/importwallet")]
+    #[at("/import")]
+    ImportWalletRoot,
+    #[at("/import/*")]
     ImportWallet,
     #[at("/approve")]
     ApprovePSBT,
+    #[not_found]
+    #[at("/404")]
+    NotFound,
+}
+
+#[derive(Clone, Routable, PartialEq)]
+pub enum ImportWalletRoute {
+    #[at("/import")]
+    ImportWalletHome,
+    #[at("/import/seed")]
+    ImportSeed,
+    #[at("/import/generatedseed")]
+    GenerateSeed,
+    #[at("/import/xprv")]
+    ImportXPRV,
+    #[not_found]
+    #[at("/import/404")]
+    NotFound,
 }
 
 #[function_component(Redirect)]
@@ -61,19 +46,29 @@ pub fn redirect() -> Html {
     html! {}
 }
 
-pub fn switch(routes: Route) -> Html {
+pub fn switch_main(routes: Route) -> Html {
     let render_route = match routes {
         Route::Home => html! { <Home /> },
         Route::CreateAccount => html! { <CreateAccount /> },
-        Route::ImportWallet => html! { <ImportWallet /> },
-        Route::Mnemonic {
-            action: Mnemonic::Import,
-        } => html! { <ImportFromMnemonic /> },
-        Route::Mnemonic {
-            action: Mnemonic::Generate,
-        } => html! { <GenerateMnemonic /> },
-        Route::NotFound => html! { <Redirect/> },
+        Route::ImportWalletRoot | Route::ImportWallet => {
+            html! { <Switch<ImportWalletRoute> render={switch_import_wallets}/> }
+        }
         Route::ApprovePSBT => html! { <ApprovePSBT/> },
+        Route::NotFound => html! { <Redirect /> },
+    };
+
+    html! {
+        {render_route}
+    }
+}
+
+fn switch_import_wallets(route: ImportWalletRoute) -> Html {
+    let render_route = match route {
+        ImportWalletRoute::ImportWalletHome => html! { <ImportWallet /> },
+        ImportWalletRoute::ImportSeed => html! { <ImportFromSeed /> },
+        ImportWalletRoute::GenerateSeed => html! { <GenerateSeed /> },
+        ImportWalletRoute::ImportXPRV => html! { <ImportFromXprv /> },
+        ImportWalletRoute::NotFound => html! { <Redirect /> },
     };
 
     html! {
