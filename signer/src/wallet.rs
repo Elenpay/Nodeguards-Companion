@@ -1,5 +1,3 @@
-use std::str::FromStr;
-
 use crate::utils::encryption::{decrypt, encrypt, get_encryption_key, AEAD_NONCE_SIZE_BYTES};
 use crate::NETWORK;
 use anyhow::{anyhow, Context, Result};
@@ -10,6 +8,7 @@ use bdk::miniscript::Segwitv0;
 use bitcoin::util::bip32::{DerivationPath, ExtendedPrivKey};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
+use std::str::FromStr;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Secret {
@@ -146,7 +145,7 @@ impl Wallet {
 }
 
 #[test]
-fn encrypt_decrypt_xpriv_success() {
+fn encrypt_decrypt_seed_success() {
     let mut wallet = Wallet::default();
     let password = "Qwerty123";
     let seed_str = "solar goat auto bachelor chronic input twin depth fork scale divorce fury mushroom column image sauce car public artist announce treat spend jacket physical";
@@ -157,6 +156,22 @@ fn encrypt_decrypt_xpriv_success() {
     let seed = Mnemonic::parse(seed_str).unwrap();
     let xkey: ExtendedKey = seed.into_extended_key().unwrap();
     let xprv = xkey.into_xprv(NETWORK).unwrap();
+
+    assert_eq!(xprv, wallet.get_xprv(password).unwrap())
+}
+
+#[test]
+fn encrypt_decrypt_xpriv_success() {
+    let mut wallet = Wallet::default();
+    let password = "Qwerty123";
+    let xprv_str = "tprv8aXrDeJbcYaRPWkuqtzTMR2Gui4T6A9bwfq6pScH4GSFFzrvXTQ21Fj9fjLzcv4MQxE8yyBtVjrCDn21kbjVvSrghAWU7hGDGQUFZTNADg4";
+    let derivation = "m/48'/1'/1'";
+    wallet
+        .from_xprv_str("Wallet 1", xprv_str, derivation, password)
+        .unwrap();
+
+    let mut xprv = ExtendedPrivKey::from_str(xprv_str).unwrap();
+    xprv.network = NETWORK;
 
     assert_eq!(xprv, wallet.get_xprv(password).unwrap())
 }

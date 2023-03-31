@@ -4,8 +4,8 @@ use crate::{
     utils::{events::EventManager, state::PasswordFor, storage::LocalStorage},
 };
 use signer::storage::UserStorage;
-use web_sys::MouseEvent;
-use yew::{function_component, html, use_state, Callback, Html};
+use web_sys::{HtmlSelectElement, MouseEvent};
+use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
 #[function_component(Home)]
@@ -15,7 +15,9 @@ pub fn home() -> Html {
     let selected_wallet = use_state(|| storage.get_default_wallet());
     let revealed_secret = use_state(String::default);
     let popup_visible = use_state(|| false);
+    let selected_wallet_value = (*selected_wallet).clone();
     let derivation = use_state(String::default);
+    let select_node_ref = use_node_ref();
 
     if !storage.has_password() || storage.name.is_none() {
         navigator.push(&Route::CreateAccount);
@@ -36,12 +38,14 @@ pub fn home() -> Html {
 
     let onclick_reveal = {
         let revealed_secret = revealed_secret.clone();
+        let derivation = derivation.clone();
         let popup_visible = popup_visible.clone();
         Callback::from(move |_: MouseEvent| {
             if revealed_secret.is_empty() {
                 popup_visible.set(true);
             } else {
                 revealed_secret.set(String::default());
+                derivation.set(String::default());
             }
         })
     };
@@ -50,6 +54,7 @@ pub fn home() -> Html {
         let popup_visible = popup_visible.clone();
         let revealed_secret = revealed_secret.clone();
         let derivation = derivation.clone();
+        let selected_wallet = selected_wallet.clone();
         Callback::from(move |password: String| {
             let mut storage = UserStorage::read(LocalStorage::default());
             let secret_str = storage.get_wallet_mut(&selected_wallet).and_then(|w| {
@@ -74,6 +79,15 @@ pub fn home() -> Html {
         let popup_visible = popup_visible.clone();
         Callback::from(move |_| {
             popup_visible.set(false);
+        })
+    };
+
+    let onchange = {
+        let select_node_ref = select_node_ref.clone();
+        Callback::from(move |_: Event| {
+            if let Some(target) = select_node_ref.cast::<HtmlSelectElement>() {
+                selected_wallet.set(target.value());
+            }
         })
     };
 
@@ -102,13 +116,13 @@ pub fn home() -> Html {
     html! {
         <>
             <h class="title">{"Your Wallets"}</h>
-            <select name="wallets">
+            <select name="wallets" {onchange} ref={select_node_ref}>
                 {
                     storage.wallets.iter().map(|w| {
                         let name = w.name.to_string();
                         let value = w.name.to_string();
                         html! {
-                            <option value={value}>{name}</option>
+                            <option selected={selected_wallet_value == name} value={value}>{name}</option>
                         }
                 }).collect::<Html>()
                 }
