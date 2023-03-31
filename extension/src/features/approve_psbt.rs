@@ -1,4 +1,5 @@
 use crate::{
+    components::select::{Select, SelectItem},
     features::input_password_modal::InputPasswordModal,
     paste_psbt,
     switch::Route,
@@ -8,7 +9,7 @@ use crate::{
 use anyhow::anyhow;
 use signer::{psbt_details::PSBTDetails, signer::decode_psbt_and_sign, storage::UserStorage};
 use std::str::FromStr;
-use web_sys::{window, HtmlSelectElement};
+use web_sys::window;
 use yew::prelude::*;
 use yew_router::prelude::{use_location, use_navigator};
 
@@ -24,7 +25,6 @@ pub fn approve_psbt() -> Html {
     let popup_visible = use_state(|| false);
     let selected_wallet_value = (*selected_wallet).clone();
     let error_value = (*error).clone();
-    let select_node_ref = use_node_ref();
     let operation_data = state.get_ref::<OperationRequestData>();
 
     let no_data = html! {
@@ -47,11 +47,8 @@ pub fn approve_psbt() -> Html {
         };
 
         let onchange = {
-            let select_node_ref = select_node_ref.clone();
-            Callback::from(move |_: Event| {
-                if let Some(target) = select_node_ref.cast::<HtmlSelectElement>() {
-                    selected_wallet.set(target.value());
-                }
+            Callback::from(move |value: SelectItem| {
+                selected_wallet.set(value.label);
             })
         };
 
@@ -63,17 +60,20 @@ pub fn approve_psbt() -> Html {
         let onsave = {
             let popup_visible = popup_visible.clone();
             let psbt = psbt.clone();
-            let selected_wallet_value = selected_wallet_value.clone();
+            let selected_wallet_value = selected_wallet_value;
             Callback::from(move |password: String| {
                 let mut storage = UserStorage::read(LocalStorage::default());
 
                 let result = storage
                     .get_wallet_mut(&selected_wallet_value)
                     .ok_or_else(|| anyhow!("Wallet not found"))
-                    .and_then(|wallet| decode_psbt_and_sign(&psbt, wallet, &password))
-                    .map_err(|_| anyhow!("Error while signing PSBT"))
-                    .and_then(|signed_psbt| paste_psbt(&signed_psbt))
-                    .map_err(|_| anyhow!("Error while pasting PSBT"));
+                    .and_then(|wallet| {
+                        decode_psbt_and_sign(&psbt, wallet, &password)
+                            .map_err(|_| anyhow!("Error while signing PSBT"))
+                    })
+                    .and_then(|signed_psbt| {
+                        paste_psbt(&signed_psbt).map_err(|_| anyhow!("Error while pasting PSBT"))
+                    });
 
                 match result {
                     Ok(_) => {
@@ -93,6 +93,11 @@ pub fn approve_psbt() -> Html {
             })
         };
 
+        let items: Vec<SelectItem> = storage
+            .wallets
+            .iter()
+            .map(|w| SelectItem::new(&w.name, &w.name))
+            .collect();
         let psbt = PSBTDetails::from_str(&psbt).unwrap_or_default();
         return html! {
             <>
@@ -115,17 +120,7 @@ pub fn approve_psbt() -> Html {
                     <span>{psbt.fee}</span>
                     <span>{"SATS"}</span>
                 </div>
-                <select name="wallets" {onchange} ref={select_node_ref}>
-                {
-                    storage.wallets.iter().map(|w| {
-                        let name = w.name.to_string();
-                        let value = w.name.to_string();
-                        html! {
-                            <option selected={selected_wallet_value == name} value={value}>{name}</option>
-                        }
-                }).collect::<Html>()
-                }
-                </select>
+                <Select {onchange} items={items}/>
                 <div class="error">{error_value}</div>
                 <div class="button-bar">
                     <button class="cancel" onclick={onclick_goback}>{"Go back"}</button>

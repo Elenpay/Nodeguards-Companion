@@ -1,10 +1,11 @@
 use crate::{
+    components::select::{Select, SelectItem},
     features::input_password_modal::InputPasswordModal,
     switch::{ImportWalletRoute, Route},
     utils::{events::EventManager, state::PasswordFor, storage::LocalStorage},
 };
 use signer::storage::UserStorage;
-use web_sys::{HtmlSelectElement, MouseEvent};
+use web_sys::MouseEvent;
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
@@ -15,9 +16,7 @@ pub fn home() -> Html {
     let selected_wallet = use_state(|| storage.get_default_wallet());
     let revealed_secret = use_state(String::default);
     let popup_visible = use_state(|| false);
-    let selected_wallet_value = (*selected_wallet).clone();
     let derivation = use_state(String::default);
-    let select_node_ref = use_node_ref();
 
     if !storage.has_password() || storage.name.is_none() {
         navigator.push(&Route::CreateAccount);
@@ -83,11 +82,12 @@ pub fn home() -> Html {
     };
 
     let onchange = {
-        let select_node_ref = select_node_ref.clone();
-        Callback::from(move |_: Event| {
-            if let Some(target) = select_node_ref.cast::<HtmlSelectElement>() {
-                selected_wallet.set(target.value());
-            }
+        let revealed_secret = revealed_secret.clone();
+        let derivation = derivation.clone();
+        Callback::from(move |value: SelectItem| {
+            selected_wallet.set(value.label);
+            revealed_secret.set(String::default());
+            derivation.set(String::default());
         })
     };
 
@@ -113,20 +113,15 @@ pub fn home() -> Html {
         "Hide Secret"
     };
 
+    let items: Vec<SelectItem> = storage
+        .wallets
+        .iter()
+        .map(|w| SelectItem::new(&w.name, &w.name))
+        .collect();
     html! {
         <>
             <h class="title">{"Your Wallets"}</h>
-            <select name="wallets" {onchange} ref={select_node_ref}>
-                {
-                    storage.wallets.iter().map(|w| {
-                        let name = w.name.to_string();
-                        let value = w.name.to_string();
-                        html! {
-                            <option selected={selected_wallet_value == name} value={value}>{name}</option>
-                        }
-                }).collect::<Html>()
-                }
-            </select>
+            <Select {onchange} items={items}/>
             {secret_data}
             <button onclick={onclick_reveal}>{reveal_message}</button>
             <button onclick={onclick_import}>{"Import another wallet"}</button>
