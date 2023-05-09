@@ -20,11 +20,13 @@ impl SelectItem {
 pub struct Props {
     pub items: Vec<SelectItem>,
     pub onchange: Callback<SelectItem, ()>,
+    pub default: Option<String>,
 }
 
 #[function_component(Select)]
 pub fn select(props: &Props) -> Html {
-    let selected = use_state(String::default);
+    let default_value = props.default.clone();
+    let selected = use_state(|| default_value.unwrap_or_default());
     let selected_value = (*selected).clone();
     let select_node_ref = use_node_ref();
 

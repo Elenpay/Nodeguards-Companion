@@ -1,5 +1,6 @@
 pub mod approve_psbt;
 pub mod create_account;
+pub mod export_xpub;
 pub mod generate_seed;
 pub mod home;
 pub mod import_from_seed;

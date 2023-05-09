@@ -128,3 +128,23 @@ li {
     margin-right: 5px;
     flex-grow: 1;
 }
+
+span.textbox-with-prefix {
+    color: #888;
+    line-height: 20px;
+    padding: 3px 0 3px 3px;
+    border: 1px solid #51A3A3;
+    border-radius: 5px;
+}
+
+span.textbox-with-prefix:focus-within {
+    outline-color: blue;
+    outline: auto;
+}
+
+span.textbox-with-prefix input {
+    border: 0px;
+    outline: none;
+    height: inherit;
+    width: 50%;
+}

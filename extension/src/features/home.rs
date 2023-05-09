@@ -17,6 +17,7 @@ pub fn home() -> Html {
     let revealed_secret = use_state(String::default);
     let popup_visible = use_state(|| false);
     let derivation = use_state(String::default);
+    let selected_wallet_value = (*selected_wallet).clone();
 
     if !storage.has_password() || storage.name.is_none() {
         navigator.push(&Route::CreateAccount);
@@ -30,8 +31,18 @@ pub fn home() -> Html {
     });
 
     let onclick_import = {
+        let navigator = navigator.clone();
         Callback::from(move |_: MouseEvent| {
             navigator.push(&ImportWalletRoute::ImportWalletHome);
+        })
+    };
+
+    let onclick_export = {
+        let selected_wallet_value = selected_wallet_value.clone();
+        Callback::from(move |_: MouseEvent| {
+            navigator.push(&Route::ExportXPUB {
+                wallet_name: selected_wallet_value.clone(),
+            });
         })
     };
 
@@ -121,10 +132,11 @@ pub fn home() -> Html {
     html! {
         <>
             <h class="title">{"Your Wallets"}</h>
-            <Select {onchange} items={items}/>
+            <Select {onchange} items={items} default={selected_wallet_value}/>
             {secret_data}
             <button onclick={onclick_reveal}>{reveal_message}</button>
             <button onclick={onclick_import}>{"Import another wallet"}</button>
+            <button onclick={onclick_export}>{"Export XPUB"}</button>
             <InputPasswordModal
                 password_for={PasswordFor::RevalSecret}
                 visible={*popup_visible}

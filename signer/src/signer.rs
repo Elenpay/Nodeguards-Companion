@@ -14,9 +14,10 @@ use crate::wallet::Wallet;
 
 fn set_sighash_type(signature: Signature, input: &Input) -> EcdsaSig {
     let sighash_type = get_sighash_type(input);
-    let mut sig = EcdsaSig::sighash_all(signature);
-    sig.hash_ty = sighash_type;
-    sig
+    EcdsaSig {
+        sig: signature,
+        hash_ty: sighash_type,
+    }
 }
 
 fn get_sighash_type(input: &Input) -> EcdsaSighashType {
@@ -36,7 +37,6 @@ fn get_partial_derivation(
         ));
     }
     let partial = &sub_derivation[derivation.len()..];
-    dbg!(&partial);
     DerivationPath::try_from(partial).map_err(|e| anyhow!("{e}"))
 }
 
@@ -65,12 +65,13 @@ fn sign_psbt(
             .as_ref()
             .context("Missing witness script")?;
 
-        let mut sighash_cache = SighashCache::new(&psbt.unsigned_tx);
         let amount = input
             .witness_utxo
             .as_ref()
             .context("Witness utxo not found")?
             .value;
+
+        let mut sighash_cache = SighashCache::new(&psbt.unsigned_tx);
         let sighash = sighash_cache.segwit_signature_hash(
             index,
             witness_script,
@@ -81,12 +82,6 @@ fn sign_psbt(
         let mut input_keypairs = Vec::new();
 
         for (_, (fingerprint, sub_derivation)) in input.bip32_derivation.iter() {
-            dbg!(&fingerprint);
-            dbg!(&xprv.fingerprint(&secp));
-            dbg!(
-                &derive_relative_xpriv(&xprv, &secp, derivation, sub_derivation)?
-                    .fingerprint(&secp)
-            );
             if fingerprint != &xprv.fingerprint(&secp) {
                 continue;
             }

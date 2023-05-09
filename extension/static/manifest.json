@@ -12,7 +12,9 @@
   "content_scripts": [
     {
       "matches": [
-        "http://localhost:38080/*"
+        "http://localhost:38080/*",
+        "https://nodeguard-staging.elenpay.tech/*",
+        "https://nodeguard.elenpay.tech/*"
       ],
       "js": [
         "browser-polyfill.min.js",
@@ -31,13 +33,17 @@
         "index.js"
       ],
       "matches": [
-        "http://localhost:38080/*"
+        "http://localhost:38080/*",
+        "https://nodeguard-staging.elenpay.tech/*",
+        "https://nodeguard.elenpay.tech/*"
       ]
     }
   ],
   "externally_connectable": {
     "matches": [
-      "http://localhost:38080/*"
+      "http://localhost:38080/*",
+      "https://nodeguard-staging.elenpay.tech/*",
+      "https://nodeguard.elenpay.tech/*"
     ]
   },
   "icons": {

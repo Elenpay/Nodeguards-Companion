@@ -5,7 +5,8 @@ use bdk::keys::bip39::{Language, Mnemonic, WordCount};
 use bdk::keys::{DerivableKey, GeneratedKey};
 use bdk::keys::{ExtendedKey, GeneratableKey};
 use bdk::miniscript::Segwitv0;
-use bitcoin::util::bip32::{DerivationPath, ExtendedPrivKey};
+use bitcoin::secp256k1::Secp256k1;
+use bitcoin::util::bip32::{DerivationPath, ExtendedPrivKey, ExtendedPubKey};
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -141,6 +142,16 @@ impl Wallet {
             Mnemonic::generate((WordCount::Words24, Language::English))
                 .map_err(|_| anyhow!("Error while generating seed"))?;
         Ok(seed.to_string())
+    }
+
+    pub fn derive_xpub(&mut self, derivation: &str, password: &str) -> Result<String> {
+        let xprv = self.get_xprv(password)?;
+        let path = DerivationPath::from_str(derivation)?;
+        let secp = Secp256k1::new();
+        let derived_xprv = xprv.derive_priv(&secp, &path)?;
+        let xpub = ExtendedPubKey::from_priv(&secp, &derived_xprv);
+
+        Ok(xpub.to_string())
     }
 }
 
