@@ -1,5 +1,6 @@
 use crate::components::text_input::TextInput;
 use crate::features::input_password_modal::InputPasswordModal;
+use crate::get_password;
 use crate::switch::Route;
 use crate::utils::helpers::get_clipboard;
 use crate::utils::macros::with_error_msg;
@@ -8,6 +9,7 @@ use crate::utils::storage::LocalStorage;
 use anyhow::Result;
 use signer::storage::UserStorage;
 use signer::wallet::Wallet;
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
@@ -25,7 +27,21 @@ pub fn generate_seed() -> Html {
     let mut seed_value = (*seed).clone();
     let wallet_name_value = (*wallet_name).clone();
     let error_value = (*error).clone();
+    let password = use_state(String::default);
 
+    {
+        use_effect_with_deps(
+            move |_| {
+                spawn_local(async move {
+                    let p = get_password().await;
+                    if let Ok(p) = p {
+                        password.set(p)
+                    }
+                })
+            },
+            (),
+        );
+    }
     let on_click_generate = {
         let error = error.clone();
         Callback::from(move |_: MouseEvent| {

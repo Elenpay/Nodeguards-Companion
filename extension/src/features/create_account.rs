@@ -1,16 +1,20 @@
 use anyhow::Result;
 use signer::storage::UserStorage;
+use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
 use crate::{
     components::text_input::TextInput,
+    context::{ContextAction, UserContext},
+    save_password,
     switch::Route,
     utils::{macros::with_error_msg, storage::LocalStorage},
 };
 
 #[function_component(CreateAccount)]
 pub fn create_account() -> Html {
+    let context = use_context::<UserContext>().unwrap();
     let navigator = use_navigator().unwrap();
     let name = use_state(String::default);
     let password = use_state(String::default);
@@ -50,6 +54,14 @@ pub fn create_account() -> Html {
 
             let stored = storage.save();
             with_error_msg!(stored, error.set("Error while storing account".to_string()));
+
+            let context = context.clone();
+            let password = password.clone();
+            spawn_local(async move {
+                let _ = save_password(&password).await;
+                // force a refresh of the UI
+                context.dispatch(ContextAction::InputPassword { password });
+            });
 
             navigator.push(&Route::Home);
         })

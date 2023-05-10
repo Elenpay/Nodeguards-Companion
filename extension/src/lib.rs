@@ -6,17 +6,19 @@
 
 pub mod app;
 pub mod components;
+pub mod context;
 pub mod features;
 pub mod switch;
 pub mod utils;
 
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use app::App;
-use js_sys::{Function, Reflect};
 use serde::Deserialize;
-use utils::events::{EventManager, State};
+use utils::{
+    casts::{call_fn_str, call_fn_str_async, call_fn_to_str_async},
+    events::{EventManager, State},
+};
 use wasm_bindgen::prelude::*;
-use web_sys::window;
 
 #[wasm_bindgen(start)]
 fn main() {
@@ -39,16 +41,15 @@ pub fn approve_psbt(value: JsValue) {
 }
 
 pub fn paste_psbt(psbt: &str) -> Result<()> {
-    let window = window().ok_or_else(|| anyhow!("Window not found"))?;
-    let paste_value = Reflect::get(&window, &JsValue::from_str("pastePSBT"))
-        .map_err(|_| anyhow!("Error while getting JS function"))?;
+    call_fn_str("pastePSBT", psbt)
+}
 
-    let paste_function = paste_value
-        .dyn_ref::<Function>()
-        .ok_or_else(|| anyhow!("Cast from JS to Rust invalid"))?;
+#[allow(clippy::future_not_send)]
+pub async fn save_password(password: &str) -> Result<()> {
+    call_fn_str_async("savePassword", password).await
+}
 
-    paste_function
-        .call1(&JsValue::undefined(), &psbt.into())
-        .map(|_| ())
-        .map_err(|_| anyhow!("Error while calling JS function"))
+#[allow(clippy::future_not_send)]
+pub async fn get_password() -> Result<String> {
+    call_fn_to_str_async("getPassword").await
 }

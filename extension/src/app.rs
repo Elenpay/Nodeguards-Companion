@@ -1,4 +1,10 @@
-use crate::switch::{switch, Route};
+use crate::{
+    context::UserContextProvider,
+    features::input_password_modal::InputPasswordModal,
+    features::password_injector::PasswordInjector,
+    switch::{switch, Route},
+    utils::state::PasswordFor,
+};
 use yew::prelude::*;
 use yew_router::prelude::*;
 
@@ -7,7 +13,12 @@ pub fn app() -> Html {
     html! {
         <div class="app">
             <BrowserRouter>
-                <Switch<Route> render={switch} />
+                <UserContextProvider>
+                    <PasswordInjector>
+                        <Switch<Route> render={switch} />
+                        <InputPasswordModal password_for={PasswordFor::UnlockingApp}/>
+                    </PasswordInjector>
+                </UserContextProvider>
             </BrowserRouter>
         </div>
     }

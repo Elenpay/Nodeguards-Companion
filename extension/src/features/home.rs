@@ -1,8 +1,8 @@
 use crate::{
     components::select::{Select, SelectItem},
-    features::input_password_modal::InputPasswordModal,
+    context::UserContext,
     switch::{ImportWalletRoute, Route},
-    utils::{events::EventManager, state::PasswordFor, storage::LocalStorage},
+    utils::{events::EventManager, storage::LocalStorage},
 };
 use signer::storage::UserStorage;
 use web_sys::MouseEvent;
@@ -11,11 +11,15 @@ use yew_router::prelude::use_navigator;
 
 #[function_component(Home)]
 pub fn home() -> Html {
+    let password = use_context::<UserContext>()
+        .unwrap()
+        .password
+        .clone()
+        .unwrap_or_default();
     let navigator = use_navigator().unwrap();
     let storage = UserStorage::read(LocalStorage::default());
     let selected_wallet = use_state(|| storage.get_default_wallet());
     let revealed_secret = use_state(String::default);
-    let popup_visible = use_state(|| false);
     let derivation = use_state(String::default);
     let selected_wallet_value = (*selected_wallet).clone();
 
@@ -49,23 +53,15 @@ pub fn home() -> Html {
     let onclick_reveal = {
         let revealed_secret = revealed_secret.clone();
         let derivation = derivation.clone();
-        let popup_visible = popup_visible.clone();
-        Callback::from(move |_: MouseEvent| {
-            if revealed_secret.is_empty() {
-                popup_visible.set(true);
-            } else {
-                revealed_secret.set(String::default());
-                derivation.set(String::default());
-            }
-        })
-    };
-
-    let onsave = {
-        let popup_visible = popup_visible.clone();
-        let revealed_secret = revealed_secret.clone();
-        let derivation = derivation.clone();
         let selected_wallet = selected_wallet.clone();
-        Callback::from(move |password: String| {
+        Callback::from(move |_: MouseEvent| {
+            if !revealed_secret.is_empty() {
+                revealed_secret.set(String::default());
+                return;
+            }
+            if password.is_empty() {
+                return;
+            }
             let mut storage = UserStorage::read(LocalStorage::default());
             let secret_str = storage.get_wallet_mut(&selected_wallet).and_then(|w| {
                 w.reveal_secret(&password)
@@ -80,15 +76,6 @@ pub fn home() -> Html {
                 }
                 None => revealed_secret.set("No secret found".to_string()),
             }
-
-            popup_visible.set(false);
-        })
-    };
-
-    let oncancel = {
-        let popup_visible = popup_visible.clone();
-        Callback::from(move |_| {
-            popup_visible.set(false);
         })
     };
 
@@ -137,12 +124,6 @@ pub fn home() -> Html {
             <button onclick={onclick_reveal}>{reveal_message}</button>
             <button onclick={onclick_import}>{"Import another wallet"}</button>
             <button onclick={onclick_export}>{"Export XPUB"}</button>
-            <InputPasswordModal
-                password_for={PasswordFor::RevalSecret}
-                visible={*popup_visible}
-                onsave={onsave}
-                oncancel={oncancel}
-            />
         </>
     }
 }

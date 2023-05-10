@@ -1,7 +1,7 @@
 use crate::{
     components::text_input::TextInput,
-    features::input_password_modal::InputPasswordModal,
-    utils::{helpers::get_clipboard, state::PasswordFor, storage::LocalStorage},
+    context::UserContext,
+    utils::{helpers::get_clipboard, storage::LocalStorage},
 };
 use anyhow::Result;
 use signer::storage::UserStorage;
@@ -16,12 +16,15 @@ pub struct Props {
 
 #[function_component(ExportXPUB)]
 pub fn export_xpub(props: &Props) -> Html {
+    let password = use_context::<UserContext>()
+        .unwrap()
+        .password
+        .clone()
+        .unwrap_or_default();
     let mut storage = UserStorage::read(LocalStorage::default());
     let wallet = storage.get_wallet_mut(&props.wallet_name);
     let navigator = use_navigator().unwrap();
     let revealed_xpub = use_state(String::default);
-    let popup_visible = use_state(|| true);
-    let password = use_state(String::default);
     let derivation = use_state(|| {
         wallet
             .as_ref()
@@ -32,14 +35,13 @@ pub fn export_xpub(props: &Props) -> Html {
     let derivation_value = (*derivation).clone();
     let next_derivation_value = (*next_derivation).clone();
     let revealed_xpub_value = (*revealed_xpub).clone();
-    let password_value = (*password).clone();
 
     let wallet_name = props.wallet_name.clone();
-    let password_value_ue = password_value.clone();
+    let password_value_ue = password.clone();
     let next_derivation_value_ue = next_derivation_value.clone();
     let revealed_xpub_ue = revealed_xpub.clone();
     let next_derivation_value_deps = next_derivation_value.clone();
-    let password_value_deps = password_value.clone();
+    let password_value_deps = password.clone();
     use_effect_with_deps(
         move |_| {
             if !password_value_ue.is_empty() {
@@ -67,9 +69,7 @@ pub fn export_xpub(props: &Props) -> Html {
     );
 
     let onclick_go_back = {
-        let password = password.clone();
         Callback::from(move |_: MouseEvent| {
-            password.set(String::default());
             navigator.back();
         })
     };
@@ -78,21 +78,6 @@ pub fn export_xpub(props: &Props) -> Html {
         let revealed_xpub = revealed_xpub.clone();
         Callback::from(move |_: MouseEvent| {
             let _ = get_clipboard().map(|c| c.write_text(&revealed_xpub));
-        })
-    };
-
-    let onsave = {
-        let popup_visible = popup_visible.clone();
-        Callback::from(move |pass: String| {
-            password.set(pass);
-            popup_visible.set(false);
-        })
-    };
-
-    let oncancel = {
-        let popup_visible = popup_visible.clone();
-        Callback::from(move |_| {
-            popup_visible.set(false);
         })
     };
 
@@ -123,16 +108,10 @@ pub fn export_xpub(props: &Props) -> Html {
             <label>{"Derivation:"}</label>
             <span class="textbox-with-prefix">
                 {derivation_value}{"/"}
-                <TextInput id={Some("derivation-input")} onchange={onchange} value={next_derivation_value} disabled={password_value.is_empty()}/>
+                <TextInput id={Some("derivation-input")} onchange={onchange} value={next_derivation_value} disabled={password.is_empty()}/>
             </span>
             <button onclick={onclick_copy_xpub}>{"Copy XPUB"}</button>
             <button onclick={onclick_go_back}>{"Go Back"}</button>
-            <InputPasswordModal
-                password_for={PasswordFor::RevalSecret}
-                visible={*popup_visible}
-                onsave={onsave}
-                oncancel={oncancel}
-            />
         </>
     }
 }

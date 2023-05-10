@@ -1,31 +1,38 @@
 use anyhow::Result;
 use signer::storage::UserStorage;
+use wasm_bindgen_futures::spawn_local;
 use web_sys::MouseEvent;
 use yew::prelude::*;
 
 use crate::{
     components::text_input::TextInput,
+    context::{ContextAction, UserContext},
+    save_password,
     utils::{helpers::focus, state::PasswordFor, storage::LocalStorage},
 };
 
 #[derive(Properties, PartialEq)]
 pub struct Props {
-    pub visible: bool,
+    pub visible: Option<bool>,
     pub password_for: PasswordFor,
-    pub onsave: Callback<String, ()>,
-    pub oncancel: Callback<(), ()>,
+    pub onsave: Option<Callback<String, ()>>,
+    pub oncancel: Option<Callback<(), ()>>,
 }
 
 #[function_component(InputPasswordModal)]
 pub fn input_password_modal(props: &Props) -> Html {
+    let storage = UserStorage::read(LocalStorage::default());
+    let context = use_context::<UserContext>().unwrap();
+    let password_session = context.password.clone().unwrap_or_default();
     let password = use_state(String::default);
     let error = use_state(String::default);
     let checkbox_state = use_state(|| false);
-    let password_value = (*password).clone();
     let error_value = (*error).clone();
+    let password_value = (*password).clone();
 
     let route = props.password_for;
-    let visible = props.visible;
+    let visible = storage.has_password()
+        && (props.visible.unwrap_or_default() || password_session.is_empty());
     use_effect_with_deps(
         move |_| {
             if !visible {
@@ -36,16 +43,16 @@ pub fn input_password_modal(props: &Props) -> Html {
                 _ => focus("password-input"),
             };
         },
-        props.visible,
+        visible,
     );
 
-    if !props.visible {
+    if !visible {
         return html! {};
     }
 
     let onclick = {
         let password = password.clone();
-        let onsave = props.onsave.clone();
+        let onsave = props.onsave.clone().unwrap_or_default();
         Callback::from(move |_: MouseEvent| {
             let storage = UserStorage::read(LocalStorage::default());
 
@@ -65,6 +72,13 @@ pub fn input_password_modal(props: &Props) -> Html {
                 }
             }
 
+            let p = (*password).clone();
+            let context = context.clone();
+            spawn_local(async move {
+                let _ = save_password(&p).await;
+                // force a refresh of the UI
+                context.dispatch(ContextAction::InputPassword { password: p });
+            });
             onsave.emit((*password).clone());
             password.set(String::default());
         })
@@ -79,12 +93,11 @@ pub fn input_password_modal(props: &Props) -> Html {
 
     let button_label = match props.password_for {
         PasswordFor::ImportingSecret => "Import",
-        PasswordFor::SigningPSBT => "Sign",
-        PasswordFor::RevalSecret => "Reveal",
+        PasswordFor::UnlockingApp => "Unlock",
     };
 
     let onclick_cancel = {
-        let oncancel = props.oncancel.clone();
+        let oncancel = props.oncancel.clone().unwrap_or_default();
         Callback::from(move |_: MouseEvent| {
             oncancel.emit(());
             password.set(String::default());
@@ -104,23 +117,30 @@ pub fn input_password_modal(props: &Props) -> Html {
                 I understand that if I remove this extension my seed will be lost forever"#}</label>
             </div>
         },
-        PasswordFor::SigningPSBT | PasswordFor::RevalSecret => html! {},
+        PasswordFor::UnlockingApp => html! {},
     };
 
     let save_disabled = match props.password_for {
         PasswordFor::ImportingSecret => !*checkbox_state || password_value.is_empty(),
-        PasswordFor::SigningPSBT | PasswordFor::RevalSecret => password_value.is_empty(),
+        PasswordFor::UnlockingApp => password_value.is_empty(),
+    };
+
+    let title = match props.password_for {
+        PasswordFor::ImportingSecret => "Input your password to confirm",
+        PasswordFor::UnlockingApp => "Input your password to unlock extension",
     };
 
     html! {
-        <div class="modal">
-            <h class="title">{"Input your password to confirm"}</h>
-            {checkbox}
-            <TextInput id={Some("password-input")} itype="password" onchange={on_change} value={password_value} placeholder="Input your password" />
-            <div class="error">{error_value}</div>
-            <div class="button-bar">
-                <button class="cancel" onclick={onclick_cancel}>{"Cancel"}</button>
-                <button disabled={save_disabled} {onclick}>{button_label}</button>
+        <div class="modal-backdrop">
+            <div class="modal">
+                <h class="title">{title}</h>
+                {checkbox}
+                <TextInput id={Some("password-input")} itype="password" onchange={on_change} value={password_value} placeholder="Input your password" />
+                <div class="error">{error_value}</div>
+                <div class="button-bar">
+                    <button class="cancel" onclick={onclick_cancel}>{"Cancel"}</button>
+                    <button disabled={save_disabled} {onclick}>{button_label}</button>
+                </div>
             </div>
         </div>
     }

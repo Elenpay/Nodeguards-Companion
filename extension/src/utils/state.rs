@@ -6,6 +6,5 @@ pub struct PSBTWithWallet {
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PasswordFor {
     ImportingSecret,
-    SigningPSBT,
-    RevalSecret,
+    UnlockingApp,
 }

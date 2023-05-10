@@ -93,7 +93,7 @@ li {
 .modal {
     position: fixed;
     width: 50%;
-    top: 18%;
+    top: 11%;
     left: 25%;
 
     border: 1px solid #51A3A3;
@@ -103,6 +103,15 @@ li {
     display: flex;
     flex-direction: column;
     padding: 20px;
+}
+
+.modal-backdrop {
+    position: fixed;
+    background-color: #011936;
+    width: 100vw;
+    height: 100vh;
+    top: 0px;
+    left: 0px;
 }
 
 .checkbox-container {
