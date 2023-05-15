@@ -33,23 +33,31 @@ declare namespace browser.storage.session {
     }
 }
 
+window.sessionExists = () => !!browser?.storage?.session;
+
 const clearPassword = async () => {
-    console.log("clearing password");
-    await browser.storage.session.clear();
+    if (!browser) {
+        return;
+    }
+    await browser?.storage?.session?.clear?.();
 };
 
 window.savePassword = async (password: string) => {
-    await browser.storage.session.set({ password, expiration: Date.now() + 1000 * 60 * 5 });
+    if (!browser) {
+        return;
+    }
+    await browser?.storage?.session?.set?.({ password, expiration: Date.now() + 1000 * 60 * 5 });
 };
 
 window.getPassword = async () => {
-    let password_data = await browser.storage.session.get("password");
-    let expiration_data = await browser.storage.session.get("expiration");
-    console.log(expiration_data);
+    if (!browser) {
+        return "";
+    }
+    let password_data = await browser?.storage?.session?.get?.("password");
+    let expiration_data = await browser?.storage?.session?.get?.("expiration");
     if (!expiration_data?.expiration || expiration_data.expiration < Date.now()) {
         await clearPassword();
         return "";
     }
-    console.log(password_data);
     return password_data.password;
 };

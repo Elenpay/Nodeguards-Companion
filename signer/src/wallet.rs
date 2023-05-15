@@ -1,5 +1,4 @@
 use crate::utils::encryption::{decrypt, encrypt, get_encryption_key, AEAD_NONCE_SIZE_BYTES};
-use crate::NETWORK;
 use anyhow::{anyhow, Context, Result};
 use bdk::keys::bip39::{Language, Mnemonic, WordCount};
 use bdk::keys::{DerivableKey, GeneratedKey};
@@ -7,6 +6,7 @@ use bdk::keys::{ExtendedKey, GeneratableKey};
 use bdk::miniscript::Segwitv0;
 use bitcoin::secp256k1::Secp256k1;
 use bitcoin::util::bip32::{DerivationPath, ExtendedPrivKey, ExtendedPubKey};
+use bitcoin::Network;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::str::FromStr;
@@ -56,7 +56,11 @@ impl Wallet {
         )
     }
 
-    pub fn get_xprv(&mut self, password: &str) -> anyhow::Result<ExtendedPrivKey> {
+    pub fn get_xprv(
+        &mut self,
+        password: &str,
+        network: Network,
+    ) -> anyhow::Result<ExtendedPrivKey> {
         let salt = self.get_salt();
         let nonce = self.get_nonce();
 
@@ -74,13 +78,13 @@ impl Wallet {
             Some(Secret::Seed(_)) => {
                 let seed = Mnemonic::parse(decrypted_secret)?;
                 let xkey: ExtendedKey = seed.into_extended_key()?;
-                let xprv = xkey.into_xprv(NETWORK).context("No private key found")?;
+                let xprv = xkey.into_xprv(network).context("No private key found")?;
                 Ok(xprv)
             }
             Some(Secret::XPRV(_)) => {
                 let mut xprv =
                     ExtendedPrivKey::from_str(&decrypted_secret).map_err(|e| anyhow!("{}", e))?;
-                xprv.network = NETWORK;
+                xprv.network = network;
                 Ok(xprv)
             }
             None => unreachable!(),
@@ -144,8 +148,13 @@ impl Wallet {
         Ok(seed.to_string())
     }
 
-    pub fn derive_xpub(&mut self, derivation: &str, password: &str) -> Result<String> {
-        let xprv = self.get_xprv(password)?;
+    pub fn derive_xpub(
+        &mut self,
+        derivation: &str,
+        password: &str,
+        network: Network,
+    ) -> Result<String> {
+        let xprv = self.get_xprv(password, network)?;
         let path = DerivationPath::from_str(derivation)?;
         let secp = Secp256k1::new();
         let derived_xprv = xprv.derive_priv(&secp, &path)?;
@@ -166,9 +175,9 @@ fn encrypt_decrypt_seed_success() {
 
     let seed = Mnemonic::parse(seed_str).unwrap();
     let xkey: ExtendedKey = seed.into_extended_key().unwrap();
-    let xprv = xkey.into_xprv(NETWORK).unwrap();
+    let xprv = xkey.into_xprv(Network::Bitcoin).unwrap();
 
-    assert_eq!(xprv, wallet.get_xprv(password).unwrap())
+    assert_eq!(xprv, wallet.get_xprv(password, Network::Bitcoin).unwrap())
 }
 
 #[test]
@@ -182,7 +191,7 @@ fn encrypt_decrypt_xpriv_success() {
         .unwrap();
 
     let mut xprv = ExtendedPrivKey::from_str(xprv_str).unwrap();
-    xprv.network = NETWORK;
+    xprv.network = Network::Bitcoin;
 
-    assert_eq!(xprv, wallet.get_xprv(password).unwrap())
+    assert_eq!(xprv, wallet.get_xprv(password, Network::Bitcoin).unwrap())
 }

@@ -1,6 +1,6 @@
 use crate::{
     context::{ContextAction, UserContext},
-    get_password,
+    get_password, session_exists,
 };
 use wasm_bindgen_futures::spawn_local;
 use yew::prelude::*;
@@ -16,6 +16,9 @@ pub fn PasswordInjector(props: &PasswordInjectorProps) -> Html {
     let context = use_context::<UserContext>().unwrap();
     let existing_password = context.password.clone().unwrap_or_default();
     use_effect(move || {
+        if !session_exists().unwrap_or_default() {
+            return;
+        }
         spawn_local(async move {
             match get_password().await {
                 Ok(password) if !password.is_empty() && password != existing_password => {

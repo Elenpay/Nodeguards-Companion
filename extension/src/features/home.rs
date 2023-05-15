@@ -41,6 +41,13 @@ pub fn home() -> Html {
         })
     };
 
+    let onclick_settings = {
+        let navigator = navigator.clone();
+        Callback::from(move |_: MouseEvent| {
+            navigator.push(&Route::Settings);
+        })
+    };
+
     let onclick_export = {
         let selected_wallet_value = selected_wallet_value.clone();
         Callback::from(move |_: MouseEvent| {
@@ -124,6 +131,7 @@ pub fn home() -> Html {
             <button onclick={onclick_reveal}>{reveal_message}</button>
             <button onclick={onclick_import}>{"Import another wallet"}</button>
             <button onclick={onclick_export}>{"Export XPUB"}</button>
+            <button onclick={onclick_settings}>{"Settings"}</button>
         </>
     }
 }

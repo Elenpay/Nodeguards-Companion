@@ -7,7 +7,11 @@ use crate::{
     OperationRequestData,
 };
 use anyhow::anyhow;
-use signer::{psbt_details::PSBTDetails, signer::decode_psbt_and_sign, storage::UserStorage};
+use signer::{
+    psbt_details::PSBTDetails,
+    signer::decode_psbt_and_sign,
+    storage::{SettingsStorage, UserStorage},
+};
 use std::str::FromStr;
 use web_sys::window;
 use yew::prelude::*;
@@ -52,12 +56,13 @@ pub fn approve_psbt() -> Html {
                 return;
             }
             let mut storage = UserStorage::read(LocalStorage::default());
+            let settings_storage = SettingsStorage::read(LocalStorage::default());
 
             let result = storage
                 .get_wallet_mut(&selected_wallet_value)
                 .ok_or_else(|| anyhow!("Wallet not found"))
                 .and_then(|wallet| {
-                    decode_psbt_and_sign(&psbt, wallet, &password)
+                    decode_psbt_and_sign(&psbt, wallet, &password, settings_storage.get_network())
                         .map_err(|e| anyhow!("Error while signing PSBT {e}"))
                 })
                 .and_then(|signed_psbt| {

@@ -8,3 +8,4 @@ pub mod import_from_xprv;
 pub mod import_wallet;
 pub mod input_password_modal;
 pub mod password_injector;
+pub mod settings;

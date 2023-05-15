@@ -4,7 +4,7 @@ use crate::{
     utils::{helpers::get_clipboard, storage::LocalStorage},
 };
 use anyhow::Result;
-use signer::storage::UserStorage;
+use signer::storage::{SettingsStorage, UserStorage};
 use web_sys::MouseEvent;
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
@@ -46,6 +46,7 @@ pub fn export_xpub(props: &Props) -> Html {
         move |_| {
             if !password_value_ue.is_empty() {
                 let mut storage = UserStorage::read(LocalStorage::default());
+                let settings = SettingsStorage::read(LocalStorage::default());
                 let wallet = storage.get_wallet_mut(&wallet_name);
                 if let Some(w) = wallet {
                     let full_path = if next_derivation_value_ue.is_empty() {
@@ -56,7 +57,7 @@ pub fn export_xpub(props: &Props) -> Html {
                     if full_path.ends_with('/') {
                         return;
                     }
-                    w.derive_xpub(&full_path, &password_value_ue)
+                    w.derive_xpub(&full_path, &password_value_ue, settings.get_network())
                         .as_ref()
                         .map_or_else(
                             |_| revealed_xpub_ue.set("Incorrect derivation path".to_string()),

@@ -15,7 +15,7 @@ use anyhow::Result;
 use app::App;
 use serde::Deserialize;
 use utils::{
-    casts::{call_fn_str, call_fn_str_async, call_fn_to_str_async},
+    casts::{call_fn_str, call_fn_str_async, call_fn_to_bool, call_fn_to_str_async},
     events::{EventManager, State},
 };
 use wasm_bindgen::prelude::*;
@@ -52,4 +52,8 @@ pub async fn save_password(password: &str) -> Result<()> {
 #[allow(clippy::future_not_send)]
 pub async fn get_password() -> Result<String> {
     call_fn_to_str_async("getPassword").await
+}
+
+pub fn session_exists() -> Result<bool> {
+    call_fn_to_bool("sessionExists")
 }

@@ -6,7 +6,7 @@ use bitcoin::secp256k1::{All, Message, Secp256k1};
 use bitcoin::util::bip32::{DerivationPath, ExtendedPrivKey};
 use bitcoin::util::psbt::PartiallySignedTransaction;
 use bitcoin::util::sighash::SighashCache;
-use bitcoin::{EcdsaSig, EcdsaSighashType, PublicKey};
+use bitcoin::{EcdsaSig, EcdsaSighashType, Network, PublicKey};
 use std::str::FromStr;
 
 use crate::utils::base64::to_base64;
@@ -108,10 +108,15 @@ fn sign_psbt(
     Ok(psbt)
 }
 
-pub fn decode_psbt_and_sign(psbt_64: &str, wallet: &mut Wallet, password: &str) -> Result<String> {
+pub fn decode_psbt_and_sign(
+    psbt_64: &str,
+    wallet: &mut Wallet,
+    password: &str,
+    network: Network,
+) -> Result<String> {
     let psbt = PartiallySignedTransaction::from_str(psbt_64)?;
 
-    let xprv = wallet.get_xprv(password)?;
+    let xprv = wallet.get_xprv(password, network)?;
     let signed_psbt = sign_psbt(psbt, xprv, &wallet.derivation)?;
 
     Ok(to_base64(&serialize(&signed_psbt)))

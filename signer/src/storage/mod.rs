@@ -1,19 +1,23 @@
 use anyhow::{anyhow, Context, Result};
 use argon2::Config;
+use bitcoin::Network;
 use rand::Rng;
 use serde::{Deserialize, Serialize};
 use std::fmt;
+use std::str::FromStr;
 
 pub use crate::wallet::Wallet;
 
 pub enum StorageKeys {
     User,
+    Settings,
 }
 
 impl fmt::Display for StorageKeys {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
             StorageKeys::User => write!(f, "user"),
+            StorageKeys::Settings => write!(f, "settings"),
         }
     }
 }
@@ -97,5 +101,40 @@ impl UserStorage {
 
     pub fn get_wallet_mut(&mut self, wallet_name: &str) -> Option<&mut Wallet> {
         self.wallets.iter_mut().find(|w| w.name.eq(wallet_name))
+    }
+}
+
+#[derive(Serialize, Deserialize, Default)]
+pub struct SettingsStorage {
+    #[serde(skip_serializing, skip_deserializing)]
+    store: Option<Box<dyn Store>>,
+    network: String,
+}
+
+impl SettingsStorage {
+    pub fn read(store: impl Store + 'static) -> SettingsStorage {
+        let mut settings_storage: SettingsStorage = store
+            .get_item(&StorageKeys::Settings.to_string())
+            .and_then(|value| serde_json::from_str(&value).map_err(|e| anyhow!("{}", e)))
+            .unwrap_or_default();
+
+        settings_storage.store = Some(Box::new(store));
+        settings_storage
+    }
+
+    pub fn save(&mut self) -> Result<()> {
+        let data = serde_json::to_string(&self)?;
+        self.store
+            .as_mut()
+            .context("Store not found")?
+            .set_item(&StorageKeys::Settings.to_string(), &data)
+    }
+
+    pub fn get_network(&self) -> Network {
+        Network::from_str(&self.network).unwrap_or(Network::Bitcoin)
+    }
+
+    pub fn set_network(&mut self, network: &str) {
+        self.network = network.to_string();
     }
 }

@@ -56,6 +56,18 @@ pub async fn call_fn_to_str_async(fn_name: &str) -> Result<String> {
         .context("Error while casting JS value to string")
 }
 
+pub fn call_fn_to_bool(fn_name: &str) -> Result<bool> {
+    let js_function = get_fn(fn_name)?;
+
+    let js_value = js_function
+        .call0(&JsValue::undefined())
+        .map_err(|_| anyhow!("Error while calling JS function"))?;
+
+    js_value
+        .as_bool()
+        .context("Error while casting JS value to string")
+}
+
 pub fn call_fn(fn_name: &str) -> Result<()> {
     let js_function = get_fn(fn_name)?;
 

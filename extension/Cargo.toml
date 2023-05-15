@@ -10,7 +10,7 @@ crate-type = ["cdylib"]
 
 [dependencies]
 anyhow = "1.0.69"
-signer = { path = "../signer", features=["regtest"] }
+signer = { path = "../signer" }
 wasm-bindgen = { version="0.2.84" }
 yew = { version = "0.20.0", features = ["csr"] }
 yew-router = "0.17.0"
@@ -36,5 +36,3 @@ features = [
   "Navigator"
 ]
 
-[features]
-regtest = []
