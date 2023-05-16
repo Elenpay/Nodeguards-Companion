@@ -1,4 +1,4 @@
-# Nodeguard-Signer-Extension
+# Nodeguard's Companion
 
 The Nodeguard-Signer-Extension is a browser extension that allows you to load your existing Bitcoin wallets and sign operations by generating a PSBT.
 
@@ -83,7 +83,13 @@ add the resulting PSBT to the correspondent text area in your browser. If you ar
   documentation improvements.  
 
  
+# 🔐 License
 
+This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0)
+
+In short, the AGPL-3.0 license allows you to use, copy, modify, and distribute this software for any purpose, as long as any modifications or derivative works are also licensed under the AGPL-3.0 license and any distributed versions of the software include the original source code or a written offer to obtain the source code. However, if you use the software to provide a network service, you must also make the source code available to users of the service under the terms of the AGPL-3.0 license.
+
+For more information about the AGPL-3.0 license, please see [https://www.gnu.org/licenses/agpl-3.0.en.html](https://www.gnu.org/licenses/agpl-3.0.en.html).
 
 
 
