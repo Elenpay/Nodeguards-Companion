@@ -82,7 +82,9 @@ add the resulting PSBT to the correspondent text area in your browser. If you ar
   contributions of all kinds, including bug fixes, new features, and
   documentation improvements.  
 
- 
+# Attributions
+<a href="https://www.flaticon.com/free-icons/feather" title="feather icons">Feather icons created by Freepik - Flaticon</a>
+
 # 🔐 License
 
 This project is licensed under the GNU Affero General Public License v3.0 (AGPL-3.0)
