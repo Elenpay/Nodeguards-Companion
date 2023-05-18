@@ -32,9 +32,11 @@ pub fn export_xpub(props: &Props) -> Html {
             .unwrap_or_else(String::default)
     });
     let next_derivation = use_state(String::default);
+    let error = use_state(String::default);
     let derivation_value = (*derivation).clone();
     let next_derivation_value = (*next_derivation).clone();
     let revealed_xpub_value = (*revealed_xpub).clone();
+    let error_value = (*error).clone();
 
     let wallet_name = props.wallet_name.clone();
     let password_value_ue = password.clone();
@@ -60,9 +62,14 @@ pub fn export_xpub(props: &Props) -> Html {
                     w.derive_xpub(&full_path, &password_value_ue, settings.get_network())
                         .as_ref()
                         .map_or_else(
-                            |_| revealed_xpub_ue.set("Incorrect derivation path".to_string()),
+                            |e| {
+                                revealed_xpub_ue.set("Incorrect derivation path".to_string());
+                                error.set(e.to_string());
+                            },
                             |x| revealed_xpub_ue.set(x.clone()),
                         );
+                } else {
+                    error.set("Wallet not found".to_string());
                 }
             }
         },
@@ -111,6 +118,7 @@ pub fn export_xpub(props: &Props) -> Html {
                 {derivation_value}{"/"}
                 <TextInput id={Some("derivation-input")} onchange={onchange} value={next_derivation_value} disabled={password.is_empty()}/>
             </span>
+            <div class="error">{error_value}</div>
             <button onclick={onclick_copy_xpub}>{"Copy XPUB"}</button>
             <button onclick={onclick_go_back}>{"Go Back"}</button>
         </>

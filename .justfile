@@ -13,5 +13,8 @@ build-signer:
 build-extension: build-signer
 	cd extension && yarn add ./pkg --check-files && yarn run build
 
+build-extension-v2: build-extension
+	cp extension/versions/manifest_v2.json extension/dist/manifest.json
+
 serve-extension:
 	cd extension && yarn run serve
