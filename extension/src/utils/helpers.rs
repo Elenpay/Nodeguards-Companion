@@ -1,4 +1,5 @@
 use anyhow::{anyhow, Context, Result};
+use js_sys::decode_uri_component;
 use wasm_bindgen::JsCast;
 use web_sys::{window, Clipboard, HtmlElement};
 
@@ -22,4 +23,10 @@ pub fn get_clipboard() -> Result<Clipboard> {
         .navigator()
         .clipboard()
         .context("No clipboard found")
+}
+
+pub fn decode_url_string(string: &str) -> Result<String> {
+    decode_uri_component(string)
+        .map_err(|_| anyhow!("Error while decoding url string"))
+        .map(|s| s.into())
 }

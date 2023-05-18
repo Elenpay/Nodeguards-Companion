@@ -1,7 +1,10 @@
 use crate::{
     components::text_input::TextInput,
     context::UserContext,
-    utils::{helpers::get_clipboard, storage::LocalStorage},
+    utils::{
+        helpers::{decode_url_string, get_clipboard},
+        storage::LocalStorage,
+    },
 };
 use anyhow::Result;
 use signer::storage::{SettingsStorage, UserStorage};
@@ -16,13 +19,14 @@ pub struct Props {
 
 #[function_component(ExportXPUB)]
 pub fn export_xpub(props: &Props) -> Html {
+    let decoded_wallet_name = decode_url_string(&props.wallet_name).unwrap();
     let password = use_context::<UserContext>()
         .unwrap()
         .password
         .clone()
         .unwrap_or_default();
     let mut storage = UserStorage::read(LocalStorage::default());
-    let wallet = storage.get_wallet_mut(&props.wallet_name);
+    let wallet = storage.get_wallet_mut(&decoded_wallet_name);
     let navigator = use_navigator().unwrap();
     let revealed_xpub = use_state(String::default);
     let derivation = use_state(|| {
@@ -37,8 +41,6 @@ pub fn export_xpub(props: &Props) -> Html {
     let next_derivation_value = (*next_derivation).clone();
     let revealed_xpub_value = (*revealed_xpub).clone();
     let error_value = (*error).clone();
-
-    let wallet_name = props.wallet_name.clone();
     let password_value_ue = password.clone();
     let next_derivation_value_ue = next_derivation_value.clone();
     let revealed_xpub_ue = revealed_xpub.clone();
@@ -49,7 +51,7 @@ pub fn export_xpub(props: &Props) -> Html {
             if !password_value_ue.is_empty() {
                 let mut storage = UserStorage::read(LocalStorage::default());
                 let settings = SettingsStorage::read(LocalStorage::default());
-                let wallet = storage.get_wallet_mut(&wallet_name);
+                let wallet = storage.get_wallet_mut(&decoded_wallet_name);
                 if let Some(w) = wallet {
                     let full_path = if next_derivation_value_ue.is_empty() {
                         w.derivation.to_string()

@@ -1,50 +1,50 @@
 {
-    "manifest_version": 2,
-    "name": "NodeGuard Companion",
-    "description": "Import or generate your Bitcoin mnemonics, export your xpubs and sign your PSBTs with a few clicks. Your private keys never leave your browser, we don't store any data in our servers.",
-    "version": "0.2.2",
-    "browser_action": {
-        "default_popup": "popup.html"
-    },
-    "content_security_policy": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
-    "content_scripts": [
-        {
-            "matches": [
-                "http://localhost:38080/*",
-                "https://nodeguard-staging.elenpay.tech/*",
-                "https://nodeguard.elenpay.tech/*"
-            ],
-            "js": [
-                "browser-polyfill.min.js",
-                "content.js"
-            ]
-        }
-    ],
-    "permissions": [
-        "activeTab",
-        "tabs",
-        "storage"
-    ],
-    "web_accessible_resources": [
-        "index.js"
-    ],
-    "externally_connectable": {
-        "matches": [
-            "http://localhost:38080/*",
-            "https://nodeguard-staging.elenpay.tech/*",
-            "https://nodeguard.elenpay.tech/*"
-        ]
-    },
-    "icons": {
-        "16": "icon16.png",
-        "32": "icon32.png",
-        "48": "icon48.png",
-        "128": "icon128.png"
-    },
-    "browser_specific_settings": {
-        "gecko": {
-            "id": "rodrigo@clovrlabs.com",
-            "strict_min_version": "86.0"
-        }
+  "manifest_version": 2,
+  "name": "NodeGuard Companion",
+  "description": "Import or generate your Bitcoin mnemonics, export your xpubs and sign your PSBTs with a few clicks. Your private keys never leave your browser, we don't store any data in our servers.",
+  "version": "0.2.3",
+  "browser_action": {
+    "default_popup": "popup.html"
+  },
+  "content_security_policy": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'",
+  "content_scripts": [
+    {
+      "matches": [
+        "http://localhost:38080/*",
+        "https://nodeguard-staging.elenpay.tech/*",
+        "https://nodeguard.elenpay.tech/*"
+      ],
+      "js": [
+        "browser-polyfill.min.js",
+        "content.js"
+      ]
     }
+  ],
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "storage"
+  ],
+  "web_accessible_resources": [
+    "index.js"
+  ],
+  "externally_connectable": {
+    "matches": [
+      "http://localhost:38080/*",
+      "https://nodeguard-staging.elenpay.tech/*",
+      "https://nodeguard.elenpay.tech/*"
+    ]
+  },
+  "icons": {
+    "16": "icon16.png",
+    "32": "icon32.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "rodrigo@clovrlabs.com",
+      "strict_min_version": "86.0"
+    }
+  }
 }

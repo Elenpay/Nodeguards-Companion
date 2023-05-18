@@ -9,6 +9,7 @@
     "release": "NODE_ENV=production yarn run build"
   },
   "devDependencies": {
+    "@iarna/toml": "^2.2.5",
     "@types/chrome": "^0.0.124",
     "@types/firefox-webext-browser": "^111.0.0",
     "@wasm-tool/wasm-pack-plugin": "^1.3.1",

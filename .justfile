@@ -18,3 +18,6 @@ build-extension-v2: build-extension
 
 serve-extension:
 	cd extension && yarn run serve
+
+upgrade-extension-patch:
+	cd extension/scripts && node upgradeVersion.js patch
