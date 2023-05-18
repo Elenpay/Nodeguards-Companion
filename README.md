@@ -48,10 +48,10 @@ npm install -g yarn
 ```
 
 Build the extension:
-You need to select the right target from the justfile according to the usage given to the extension.  
-For example, for signing operations in REGTEST we will use the following target:
+You need to select the right target (manifest v2, v3) from the justfile according to the usage given to the extension.  
+For example, we will use the following v2 target:
 ```sh
-just build-extension-regtest
+just build-extension-v2
 ```
 After running this command you should now have a `dist` folder with all the built artifacts, ready to be imported from a browser 
 
