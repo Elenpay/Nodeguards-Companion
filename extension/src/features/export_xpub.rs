@@ -29,6 +29,7 @@ pub fn export_xpub(props: &Props) -> Html {
     let wallet = storage.get_wallet_mut(&decoded_wallet_name);
     let navigator = use_navigator().unwrap();
     let revealed_xpub = use_state(String::default);
+    let master_fingerprint = use_state(String::default);
     let derivation = use_state(|| {
         wallet
             .as_ref()
@@ -41,6 +42,8 @@ pub fn export_xpub(props: &Props) -> Html {
     let next_derivation_value = (*next_derivation).clone();
     let revealed_xpub_value = (*revealed_xpub).clone();
     let error_value = (*error).clone();
+    let master_fingerprint_value = (*master_fingerprint).clone();
+
     let password_value_ue = password.clone();
     let next_derivation_value_ue = next_derivation_value.clone();
     let revealed_xpub_ue = revealed_xpub.clone();
@@ -68,7 +71,10 @@ pub fn export_xpub(props: &Props) -> Html {
                                 revealed_xpub_ue.set("Incorrect derivation path".to_string());
                                 error.set(e.to_string());
                             },
-                            |x| revealed_xpub_ue.set(x.clone()),
+                            |(fingerprint, xpub)| {
+                                master_fingerprint.set(fingerprint.to_string());
+                                revealed_xpub_ue.set(xpub.to_string());
+                            },
                         );
                 } else {
                     error.set("Wallet not found".to_string());
@@ -120,6 +126,8 @@ pub fn export_xpub(props: &Props) -> Html {
                 {derivation_value}{"/"}
                 <TextInput id={Some("derivation-input")} onchange={onchange} value={next_derivation_value} disabled={password.is_empty()}/>
             </span>
+            <label>{"Master fingerprint:"}</label>
+            <input value={master_fingerprint_value} />
             <div class="error">{error_value}</div>
             <button onclick={onclick_copy_xpub}>{"Copy XPUB"}</button>
             <button onclick={onclick_go_back}>{"Go Back"}</button>

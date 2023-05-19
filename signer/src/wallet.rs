@@ -153,14 +153,15 @@ impl Wallet {
         derivation: &str,
         password: &str,
         network: Network,
-    ) -> Result<String> {
+    ) -> Result<(String, String)> {
         let xprv = self.get_xprv(password, network)?;
         let path = DerivationPath::from_str(derivation)?;
         let secp = Secp256k1::new();
         let derived_xprv = xprv.derive_priv(&secp, &path)?;
         let xpub = ExtendedPubKey::from_priv(&secp, &derived_xprv);
 
-        Ok(xpub.to_string())
+        let master_fingerprint = xprv.fingerprint(&secp).to_string();
+        Ok((master_fingerprint, xpub.to_string()))
     }
 }
 

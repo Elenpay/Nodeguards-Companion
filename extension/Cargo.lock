@@ -349,7 +349,7 @@ dependencies = [
 
 [[package]]
 name = "extension"
-version = "0.2.3"
+version = "0.2.4"
 dependencies = [
  "anyhow",
  "js-sys",

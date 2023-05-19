@@ -1,6 +1,6 @@
 [package]
 name = "extension"
-version = "0.2.3"
+version = "0.2.4"
 authors = [ "The elenpay Developers" ]
 description = "A chrome extension/firefox add on for importing keys and signing PSBTs"
 edition = "2021"
