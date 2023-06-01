@@ -139,3 +139,19 @@ fn derives_partial() {
     let result = get_partial_derivation(&derivation, &sub_derivation).unwrap();
     assert_eq!(result, partial_derivation);
 }
+
+#[test]
+fn sign() {
+    let mut wallet = Wallet::default();
+    wallet.from_seed_str("wallet 1", "social mango annual basic work brain economy one safe physical junk other toy valid load cook napkin maple runway island oil fan legend stem", "Qwerty123").unwrap();
+
+    // wallet.from_xprv_str("wallet 1", "tprv8ZgxMBicQKsPduvXYAnkop1b1UoAY2pS68pe9jHuJwuMvx6G5sh4C67peYZkRawdBWbMbfoybgQJ3g8nTZAezEeHyaW9A9UjtpTRmSyJwUn", "m/48'/1'/1'", "Qwerty123").unwrap();
+    let signed_psbt = decode_psbt_and_sign(
+        "cHNidP8BAIcBAAAAAvTkJTkzr4vYO7aoN4AUZaL3BkMWYQ+mYPFBtjhVmvCSAAAAAAD/////glBxTfjYVipVX+gO+YUDCVSJdWtsFo7aTRQ25n0zqwMAAAAAAP////8BbcQAAAAAAAAiACCNY6b6UCml4qW1ojbPwqJ17aaifLtEGzgCwA97J8cCuAAAAABPAQQ1h88DLxEkLIAAAAH8O+5COgGM620iagZjKI7Q+17g+p15CrNw0DDgRzDmyAOAji4c1IK90HGWlDxagTPRaa+GAitrsDgXcWROwHRE1xAfzOTeMAAAgAEAAIABAACATwEENYfPA1asA/SAAAAB+QiuSmaw/6GrFLVa8M5I8qcCJcuQEJAtaQGvkLk+j4ECUa8V4Fu4t+rBiVs/X0f/7+zYMhoC7yIpj4nQogN98GAQYPOgszAAAIABAACAAQAAgE8BBDWHzwN9uUaNgAAAAfUicMdoejr7NR708bmjDBDzttOSFwaDrqlIjBOaEcmYAyIjhSM46mf7/Y3DUqsmJeeaJ3ZGISNr8cAhMJDTSJ6fEO0CEMgwAACAAQAAgAEAAIAAAQErU8MAAAAAAAAiACADQDxIJhQEIWqn08T37W/Ih8uXW40ehgg3slu0Uf7dRQEDBAIAAAABBWlSIQJDnVTFh6pHCQmatEEVvV6sf1P5+u9Bb7zhz0D829Ay2CEDC0VHn9A3/8QMIRBpZobsevmCDpADo8aiHknTJs9b234hA+HpTXYQbhjCPCQRmQlLH4fKO27ghsThI+ztTmujeM2ZU64iBgJDnVTFh6pHCQmatEEVvV6sf1P5+u9Bb7zhz0D829Ay2BjtAhDIMAAAgAEAAIABAACAAAAAAPIAAAAiBgMLRUef0Df/xAwhEGlmhux6+YIOkAOjxqIeSdMmz1vbfhgfzOTeMAAAgAEAAIABAACAAAAAAPIAAAAiBgPh6U12EG4YwjwkEZkJSx+Hyjtu4IbE4SPs7U5ro3jNmRhg86CzMAAAgAEAAIABAACAAAAAAPIAAAAAAQErOgUAAAAAAAAiACBdERsXcaX+/OJlazhLTNrrL9dmXPtIFX3+wl/vS3rlbgEDBAIAAAABBWlSIQI8/6zXULU4/iE7RqJR664w7V/JTpxAxkBflCGOxcM8CiECTbNidmQvwtF0A/gs/Q/H4yNY+Vhw0h7ZSQ+MZk/T0PMhAtEgc7jMqsCndxV78/4aPsQ5PCOZoIBbzLmbkAzh6xQLU64iBgI8/6zXULU4/iE7RqJR664w7V/JTpxAxkBflCGOxcM8ChgfzOTeMAAAgAEAAIABAACAAAAAAPUAAAAiBgJNs2J2ZC/C0XQD+Cz9D8fjI1j5WHDSHtlJD4xmT9PQ8xhg86CzMAAAgAEAAIABAACAAAAAAPUAAAAiBgLRIHO4zKrAp3cVe/P+Gj7EOTwjmaCAW8y5m5AM4esUCxjtAhDIMAAAgAEAAIABAACAAAAAAPUAAAAAAA==",
+        &mut wallet,
+        "Qwerty123",
+        Network::Regtest,
+    );
+    dbg!("{:?}", &signed_psbt);
+    assert!(signed_psbt.is_ok());
+}

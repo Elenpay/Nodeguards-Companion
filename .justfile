@@ -1,6 +1,9 @@
 set fallback := true
 export AR := "llvm-ar"
 
+install-1p-mac:
+	brew install --cask 1password/tap/1password-cli
+
 setup:
 	brew install llvm
 
@@ -21,3 +24,9 @@ serve-extension:
 
 upgrade-extension-patch:
 	cd extension/scripts && node upgradeVersion.js patch
+
+get-field FIELD:
+	op item get "Firefox Extension Signing Credentials" --fields {{FIELD}}
+
+sign-extension:
+	cd extension/dist && web-ext sign --api-key=$(just get-field username) --api-secret=$(just get-field credential) 

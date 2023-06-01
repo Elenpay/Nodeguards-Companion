@@ -51,6 +51,7 @@ pub fn approve_psbt() -> Html {
     let onclick_save = {
         let psbt = operation_data.psbt.clone().unwrap();
         let navigator = navigator.clone();
+        let selected_wallet_value = selected_wallet_value.clone();
         Callback::from(move |_: MouseEvent| {
             if password.is_empty() {
                 return;
@@ -116,7 +117,7 @@ pub fn approve_psbt() -> Html {
                 <span>{psbt.fee}</span>
                 <span>{"SATS"}</span>
             </div>
-            <Select {onchange} items={items}/>
+            <Select {onchange} items={items} default={selected_wallet_value}/>
             <div class="error">{error_value}</div>
             <div class="button-bar">
                 <button class="cancel" onclick={onclick_goback}>{"Go back"}</button>
