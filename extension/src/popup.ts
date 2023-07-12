@@ -61,3 +61,8 @@ window.getPassword = async () => {
     }
     return password_data.password;
 };
+
+window.openOptionsPage = () => {
+    browser.runtime.openOptionsPage();
+    window.close();
+};
