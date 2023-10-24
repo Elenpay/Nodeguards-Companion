@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "NodeGuard Companion",
-  "description": "Import or generate your Bitcoin mnemonics, export your xpubs and sign your PSBTs with a few clicks. Your private keys never leave your browser, we don't store any data in our servers.",
-  "version": "0.2.6",
+  "description": "Import or generate your Bitcoin mnemonics, export your xpubs and sign your PSBTs. Your private keys never leave your browser.",
+  "version": "0.2.7",
   "action": {
     "default_popup": "popup.html"
   },

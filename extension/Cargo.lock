@@ -349,7 +349,7 @@ dependencies = [
 
 [[package]]
 name = "extension"
-version = "0.2.6"
+version = "0.2.7"
 dependencies = [
  "anyhow",
  "js-sys",
@@ -861,9 +861,9 @@ checksum = "2a60c7ce501c71e03a9c9c0d35b861413ae925bd979cc7a4e30d060069aaac8d"
 
 [[package]]
 name = "miniscript"
-version = "9.0.1"
+version = "9.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9601439f168c13bdc5bf84349c2e61c815be4a4dcebe8c4ff4af58f4e8a6d20"
+checksum = "e5b106477a0709e2da253e5559ba4ab20a272f8577f1eefff72f3a905b5d35f5"
 dependencies = [
  "bitcoin",
  "serde",
@@ -1249,6 +1249,7 @@ dependencies = [
  "bitcoin",
  "ccm",
  "chacha20poly1305",
+ "miniscript",
  "rand",
  "rust-argon2",
  "serde",
