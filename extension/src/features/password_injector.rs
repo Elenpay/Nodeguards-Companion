@@ -24,7 +24,7 @@ pub fn PasswordInjector(props: &PasswordInjectorProps) -> Html {
                 Ok(password) if !password.is_empty() && password != existing_password => {
                     context.dispatch(ContextAction::InputPassword { password })
                 }
-                Ok(password) if password.is_empty() => {
+                Ok(password) if password.is_empty() && !existing_password.is_empty() => {
                     context.dispatch(ContextAction::ClearPassword)
                 }
                 Err(_) => context.dispatch(ContextAction::ClearPassword),

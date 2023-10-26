@@ -11,6 +11,7 @@ pub struct Props {
     pub onchange: Callback<Result<String>>,
     pub itype: Option<String>,
     pub placeholder: Option<String>,
+    pub onkeypress: Option<Callback<KeyboardEvent>>,
 }
 
 fn get_value_from_input_event(e: InputEvent) -> Result<String> {
@@ -33,6 +34,7 @@ pub fn text_input(props: &Props) -> Html {
         placeholder,
         id,
         disabled,
+        onkeypress,
     } = props.clone();
 
     let oninput = Callback::from(move |input_event: InputEvent| {
@@ -40,6 +42,6 @@ pub fn text_input(props: &Props) -> Html {
     });
 
     html! {
-        <input disabled={disabled.unwrap_or_default()} {id} {value} {oninput} type={itype} placeholder={placeholder} />
+        <input disabled={disabled.unwrap_or_default()} {id} {value} {oninput} {onkeypress} type={itype} placeholder={placeholder} />
     }
 }

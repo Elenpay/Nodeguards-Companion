@@ -91,7 +91,7 @@ impl UserStorage {
                 .wallets
                 .first()
                 .map(|w| w.name.clone())
-                .unwrap_or(String::default()),
+                .unwrap_or_default(),
         }
     }
 
