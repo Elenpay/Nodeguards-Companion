@@ -7,7 +7,7 @@ use crate::utils::storage::LocalStorage;
 use anyhow::{anyhow, Result};
 use signer::storage::UserStorage;
 use signer::wallet::Wallet;
-use std::{rc::Rc, vec};
+use std::vec;
 use wasm_bindgen::JsCast;
 use web_sys::ClipboardEvent;
 use yew::prelude::*;
@@ -123,13 +123,9 @@ pub fn import_from_seed() -> Html {
         })
     };
 
-    let seed = Rc::new(seed);
-    fn on_change_seed(
-        seed: Rc<UseStateHandle<Vec<String>>>,
-        index: usize,
-    ) -> Callback<Result<String>> {
+    fn on_change_seed(seed: UseStateHandle<Vec<String>>, index: usize) -> Callback<Result<String>> {
         Callback::from(move |value: Result<String>| {
-            let mut seed_value = (**seed).to_owned();
+            let mut seed_value = (*seed).clone();
             seed_value[index] = value.unwrap_or_default();
             seed.set(seed_value);
         })
