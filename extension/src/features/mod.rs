@@ -1,3 +1,4 @@
+pub mod approve_pasted_psbt;
 pub mod approve_psbt;
 pub mod create_account;
 pub mod export_xpub;

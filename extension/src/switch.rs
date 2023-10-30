@@ -1,7 +1,8 @@
 use crate::features::{
-    approve_psbt::ApprovePSBT, create_account::CreateAccount, export_xpub::ExportXPUB,
-    generate_seed::GenerateSeed, home::Home, import_from_seed::ImportFromSeed,
-    import_from_xprv::ImportFromXprv, import_wallet::ImportWallet, settings::Settings,
+    approve_pasted_psbt::ApprovePastedPSBT, approve_psbt::ApprovePSBT,
+    create_account::CreateAccount, export_xpub::ExportXPUB, generate_seed::GenerateSeed,
+    home::Home, import_from_seed::ImportFromSeed, import_from_xprv::ImportFromXprv,
+    import_wallet::ImportWallet, settings::Settings,
 };
 use yew::{function_component, html, Html};
 use yew_router::{prelude::use_navigator, Routable, Switch};
@@ -18,6 +19,8 @@ pub enum Route {
     ImportWallet,
     #[at("/approve")]
     ApprovePSBT,
+    #[at("/approvepasted")]
+    ApprovePastedPSBT,
     #[at("/exportxpub/:wallet_name")]
     ExportXPUB { wallet_name: String },
     #[at("/settings")]
@@ -58,6 +61,7 @@ pub fn switch(routes: Route) -> Html {
             html! { <Switch<ImportWalletRoute> render={switch_import_wallets}/> }
         }
         Route::ApprovePSBT => html! { <ApprovePSBT/> },
+        Route::ApprovePastedPSBT => html! { <ApprovePastedPSBT/> },
         Route::ExportXPUB { wallet_name } => html! { <ExportXPUB wallet_name={wallet_name}/> },
         Route::Settings => html! { <Settings /> },
         Route::NotFound => html! { <Redirect /> },
