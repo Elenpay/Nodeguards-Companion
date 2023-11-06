@@ -1,3 +1,5 @@
+use std::rc::Rc;
+
 use anyhow::Result;
 use signer::storage::UserStorage;
 use wasm_bindgen_futures::spawn_local;
@@ -130,16 +132,27 @@ pub fn input_password_modal(props: &Props) -> Html {
         PasswordFor::UnlockingApp => "Input your password to unlock extension",
     };
 
+    let onkeypress = {
+        let onclick = Rc::new(onclick.clone());
+        Callback::from(move |event: KeyboardEvent| {
+            if event.key() == "Enter" {
+                let _ = MouseEvent::new("click").map(|e| {
+                    let _ = &onclick.emit(e);
+                });
+            }
+        })
+    };
+
     html! {
         <div class="modal-backdrop">
             <div class="modal">
                 <h class="title">{title}</h>
                 {checkbox}
-                <TextInput id={Some("password-input")} itype="password" onchange={on_change} value={password_value} placeholder="Input your password" />
+                <TextInput id={Some("password-input")} itype="password" onchange={on_change} value={password_value} {onkeypress} placeholder="Input your password" />
                 <div class="error">{error_value}</div>
                 <div class="button-bar">
                     <button class="cancel" onclick={onclick_cancel}>{"Cancel"}</button>
-                    <button disabled={save_disabled} {onclick}>{button_label}</button>
+                    <button disabled={save_disabled} onclick={onclick}>{button_label}</button>
                 </div>
             </div>
         </div>

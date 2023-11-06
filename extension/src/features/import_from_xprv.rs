@@ -77,6 +77,11 @@ pub fn import_from_xprv() -> Html {
             let mut storage = UserStorage::read(LocalStorage::default());
             let mut wallet = Wallet::default();
 
+            if wallet_name_value.is_empty() {
+                error.set("Wallet name is mandatory".into());
+                return;
+            }
+
             let parsed = wallet.from_xprv_str(&wallet_name_value, &xprv, &derivation, &password);
 
             if parsed.is_err() {

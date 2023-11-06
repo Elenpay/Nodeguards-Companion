@@ -7,6 +7,7 @@ use crate::utils::storage::LocalStorage;
 use anyhow::{anyhow, Result};
 use signer::storage::UserStorage;
 use signer::wallet::Wallet;
+use std::vec;
 use wasm_bindgen::JsCast;
 use web_sys::ClipboardEvent;
 use yew::prelude::*;
@@ -15,15 +16,16 @@ use yew_router::prelude::use_navigator;
 #[function_component(ImportFromSeed)]
 pub fn import_from_seed() -> Html {
     let navigator = use_navigator().unwrap();
-    let seed = use_state(Vec::new);
+    let seed = use_state(|| vec![String::default(); 24]);
     let wallet_name = use_state(String::default);
     let error = use_state(String::default);
     let popup_visible = use_state(|| false);
-    let mut seed_value = (*seed).clone();
+    let seed_value = (*seed).clone();
     let wallet_name_value = (*wallet_name).clone();
     let error_value = (*error).clone();
 
     let onpaste = {
+        let seed = seed.clone();
         let error = error.clone();
         Callback::from(move |e: Event| {
             e.prevent_default();
@@ -41,7 +43,10 @@ pub fn import_from_seed() -> Html {
                         .map(ToString::to_string)
                         .collect::<Vec<String>>()
                 })
-                .map(|v| seed.set(v));
+                .map(|mut v| {
+                    v.resize(24, String::default());
+                    seed.set(v)
+                });
             with_error_msg!(result, error.set("Error while generating seed".to_string()));
         })
     };
@@ -88,6 +93,11 @@ pub fn import_from_seed() -> Html {
             let mut storage = UserStorage::read(LocalStorage::default());
             let mut wallet = Wallet::default();
 
+            if wallet_name_value.is_empty() {
+                error.set("Wallet name is mandatory".into());
+                return;
+            }
+
             let parsed = wallet.from_seed_str(&wallet_name_value, &(*seed).join(" "), &password);
 
             if parsed.is_err() {
@@ -113,7 +123,14 @@ pub fn import_from_seed() -> Html {
         })
     };
 
-    seed_value.resize(24, String::default());
+    fn on_change_seed(seed: UseStateHandle<Vec<String>>, index: usize) -> Callback<Result<String>> {
+        Callback::from(move |value: Result<String>| {
+            let mut seed_value = (*seed).clone();
+            seed_value[index] = value.unwrap_or_default();
+            seed.set(seed_value);
+        })
+    }
+
     html! {
         <>
             <h class="title">{"Import from Seed"}</h>
@@ -123,7 +140,7 @@ pub fn import_from_seed() -> Html {
                     seed_value.clone().iter().enumerate().map(|(index, word)| {
                         html!{
                             <li>
-                                <input disabled={*popup_visible} key={index} value={word.to_string()}/>
+                                <TextInput disabled={*popup_visible} key={index} value={word.to_string()} onchange={on_change_seed(seed.clone(), index)}/>
                             </li>
                         }
                     }).collect::<Html>()

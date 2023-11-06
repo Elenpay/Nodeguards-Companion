@@ -102,6 +102,11 @@ pub fn generate_seed() -> Html {
             let mut storage = UserStorage::read(LocalStorage::default());
             let mut wallet = Wallet::default();
 
+            if wallet_name_value.is_empty() {
+                error.set("Wallet name is mandatory".into());
+                return;
+            }
+
             let parsed = wallet.from_seed_str(&wallet_name_value, &(*seed).join(" "), &password);
 
             if parsed.is_err() {

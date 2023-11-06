@@ -34,7 +34,7 @@ pub fn export_xpub(props: &Props) -> Html {
         wallet
             .as_ref()
             .map(|w| w.derivation.to_string())
-            .unwrap_or_else(String::default)
+            .unwrap_or_default()
     });
     let next_derivation = use_state(String::default);
     let error = use_state(String::default);
