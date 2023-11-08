@@ -12,7 +12,7 @@ use signer::{
     signer::decode_psbt_and_sign,
     storage::{SettingsStorage, UserStorage},
 };
-use std::str::FromStr;
+use std::{cell::RefCell, rc::Rc, str::FromStr};
 use web_sys::window;
 use yew::prelude::*;
 use yew_router::prelude::{use_location, use_navigator};
@@ -27,8 +27,8 @@ pub fn approve_psbt() -> Html {
     let navigator = use_navigator().unwrap();
     let location = use_location().unwrap();
     let state = location.state::<State>().unwrap();
-    let storage = UserStorage::read(LocalStorage::default());
-    let default_wallet = storage.get_default_wallet();
+    let storage = Rc::new(RefCell::new(UserStorage::read(LocalStorage::default())));
+    let default_wallet = storage.borrow().get_default_wallet();
     let selected_wallet = use_state(|| default_wallet);
     let error = use_state(String::default);
     let selected_wallet_value = (*selected_wallet).clone();
@@ -52,14 +52,15 @@ pub fn approve_psbt() -> Html {
         let psbt = operation_data.psbt.clone().unwrap();
         let navigator = navigator.clone();
         let selected_wallet_value = selected_wallet_value.clone();
+        let storage = storage.clone();
         Callback::from(move |_: MouseEvent| {
             if password.is_empty() {
                 return;
             }
-            let mut storage = UserStorage::read(LocalStorage::default());
             let settings_storage = SettingsStorage::read(LocalStorage::default());
 
             let result = storage
+                .borrow_mut()
                 .get_wallet_mut(&selected_wallet_value)
                 .ok_or_else(|| anyhow!("Wallet not found"))
                 .and_then(|wallet| {
@@ -90,6 +91,7 @@ pub fn approve_psbt() -> Html {
 
     let psbt = operation_data.psbt.clone().unwrap();
     let items: Vec<SelectItem> = storage
+        .borrow()
         .wallets
         .iter()
         .map(|w| SelectItem::new(&w.name, &w.name))

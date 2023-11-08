@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 use anyhow::Result;
 use signer::storage::UserStorage;
@@ -23,7 +23,7 @@ pub struct Props {
 
 #[function_component(InputPasswordModal)]
 pub fn input_password_modal(props: &Props) -> Html {
-    let storage = UserStorage::read(LocalStorage::default());
+    let storage = RefCell::new(UserStorage::read(LocalStorage::default()));
     let context = use_context::<UserContext>().unwrap();
     let password_session = context.password.clone().unwrap_or_default();
     let password = use_state(String::default);
@@ -33,7 +33,7 @@ pub fn input_password_modal(props: &Props) -> Html {
     let password_value = (*password).clone();
 
     let route = props.password_for;
-    let visible = storage.has_password()
+    let visible = storage.borrow().has_password()
         && (props.visible.unwrap_or_default() || password_session.is_empty());
     use_effect_with_deps(
         move |_| {
@@ -56,13 +56,11 @@ pub fn input_password_modal(props: &Props) -> Html {
         let password = password.clone();
         let onsave = props.onsave.clone().unwrap_or_default();
         Callback::from(move |_: MouseEvent| {
-            let storage = UserStorage::read(LocalStorage::default());
-
             if password.is_empty() {
                 error.set("You need to input the password".to_string());
                 return;
             }
-            match storage.verify_password(password.as_bytes()) {
+            match storage.borrow().verify_password(password.as_bytes()) {
                 Ok(true) => {}
                 Ok(false) => {
                     error.set("Incorrect password".to_string());

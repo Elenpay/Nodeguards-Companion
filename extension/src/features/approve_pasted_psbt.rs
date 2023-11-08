@@ -6,14 +6,13 @@ use crate::{
     context::UserContext,
     utils::{helpers::get_clipboard, storage::LocalStorage},
 };
-use anyhow::anyhow;
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use signer::{
     psbt_details::PSBTDetails,
     signer::decode_psbt_and_sign,
     storage::{SettingsStorage, UserStorage},
 };
-use std::str::FromStr;
+use std::{cell::RefCell, rc::Rc, str::FromStr};
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
@@ -25,8 +24,8 @@ pub fn approve_pasted_psbt() -> Html {
         .clone()
         .unwrap_or_default();
     let navigator = use_navigator().unwrap();
-    let storage = UserStorage::read(LocalStorage::default());
-    let default_wallet = storage.get_default_wallet();
+    let storage = Rc::new(RefCell::new(UserStorage::read(LocalStorage::default())));
+    let default_wallet = storage.borrow().get_default_wallet();
     let selected_wallet = use_state(|| default_wallet);
     let error = use_state(String::default);
     let selected_wallet_value = (*selected_wallet).clone();
@@ -47,14 +46,15 @@ pub fn approve_pasted_psbt() -> Html {
     let onclick_save = {
         let selected_wallet_value = selected_wallet_value.clone();
         let psbt = psbt.clone();
+        let storage = storage.clone();
         Callback::from(move |_: MouseEvent| {
             if password.is_empty() {
                 return;
             }
-            let mut storage = UserStorage::read(LocalStorage::default());
             let settings_storage = SettingsStorage::read(LocalStorage::default());
 
             let result = storage
+                .borrow_mut()
                 .get_wallet_mut(&selected_wallet_value)
                 .ok_or_else(|| anyhow!("Wallet not found"))
                 .and_then(|wallet| {
@@ -64,7 +64,7 @@ pub fn approve_pasted_psbt() -> Html {
 
             match result {
                 Ok(p) => signed_psbt.set(p),
-                Err(e) => error.set(format!("{e}")),
+                Err(e) => error.set(e.to_string()),
             }
         })
     };
@@ -86,6 +86,7 @@ pub fn approve_pasted_psbt() -> Html {
 
     let copy_disabled = signed_psbt_value.is_empty();
     let items: Vec<SelectItem> = storage
+        .borrow()
         .wallets
         .iter()
         .map(|w| SelectItem::new(&w.name, &w.name))
