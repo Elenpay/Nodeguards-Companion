@@ -1,3 +1,6 @@
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use crate::components::text_input::TextInput;
 use crate::components::textarea::TextArea;
 use crate::features::input_password_modal::InputPasswordModal;
@@ -22,6 +25,7 @@ pub fn import_from_xprv() -> Html {
     let derivation_value = (*derivation).clone();
     let wallet_name_value = (*wallet_name).clone();
     let error_value = (*error).clone();
+    let storage = Rc::new(RefCell::new(UserStorage::read(LocalStorage::default())));
 
     let onclick = {
         let xprv = xprv_value.clone();
@@ -29,13 +33,13 @@ pub fn import_from_xprv() -> Html {
         let wallet_name = wallet_name_value.clone();
         let error = error.clone();
         let popup_visible = popup_visible.clone();
+        let storage = storage.clone();
         Callback::from(move |_: MouseEvent| {
-            let storage = UserStorage::read(LocalStorage::default());
             if wallet_name.is_empty() {
                 error.set("Wallet name is mandatory".into());
             }
 
-            if storage.get_wallet_ref(&wallet_name).is_some() {
+            if storage.borrow().get_wallet_ref(&wallet_name).is_some() {
                 error.set("There is already a wallet with that name".into());
                 return;
             }
@@ -74,7 +78,6 @@ pub fn import_from_xprv() -> Html {
         let derivation = derivation_value.clone();
         let popup_visible = popup_visible.clone();
         Callback::from(move |password: String| {
-            let mut storage = UserStorage::read(LocalStorage::default());
             let mut wallet = Wallet::default();
 
             if wallet_name_value.is_empty() {
@@ -88,8 +91,9 @@ pub fn import_from_xprv() -> Html {
                 error.set("Error while parsing secret".to_string());
             }
 
-            storage.wallets.push(wallet);
-            let stored = storage.save();
+            let mut s = storage.borrow_mut();
+            s.wallets.push(wallet);
+            let stored = s.save();
 
             if stored.is_err() {
                 error.set("Error while storing wallet".to_string());

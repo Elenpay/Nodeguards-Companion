@@ -8,7 +8,7 @@ pub struct Props {
     pub id: Option<String>,
     pub disabled: Option<bool>,
     pub value: String,
-    pub onchange: Callback<Result<String>>,
+    pub onchange: Option<Callback<Result<String>>>,
     pub itype: Option<String>,
     pub placeholder: Option<String>,
 }
@@ -36,7 +36,9 @@ pub fn textarea(props: &Props) -> Html {
     } = props.clone();
 
     let oninput = Callback::from(move |input_event: InputEvent| {
-        onchange.emit(get_value_from_input_event(input_event));
+        if let Some(oc) = onchange.as_ref() {
+            oc.emit(get_value_from_input_event(input_event));
+        };
     });
 
     html! {

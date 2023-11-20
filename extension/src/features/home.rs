@@ -44,10 +44,17 @@ pub fn home() -> Html {
 
     let onclick_export = {
         let selected_wallet_value = selected_wallet_value.clone();
+        let navigator = navigator.clone();
         Callback::from(move |_: MouseEvent| {
             navigator.push(&Route::ExportXPUB {
                 wallet_name: selected_wallet_value.clone(),
             });
+        })
+    };
+
+    let onclick_sign_psbt = {
+        Callback::from(move |_: MouseEvent| {
+            navigator.push(&Route::ApprovePastedPSBT);
         })
     };
 
@@ -72,6 +79,7 @@ pub fn home() -> Html {
             <Select {onchange} items={items} default={selected_wallet_value}/>
             <button onclick={onclick_import}>{"Import another wallet"}</button>
             <button onclick={onclick_export}>{"Export XPUB"}</button>
+            <button onclick={onclick_sign_psbt}>{"Sign a PSBT"}</button>
             <button onclick={onclick_settings}>{"Settings"}</button>
         </>
     }

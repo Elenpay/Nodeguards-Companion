@@ -1,5 +1,5 @@
 use signer::{storage::SettingsStorage, Network};
-use std::str::FromStr;
+use std::{cell::RefCell, str::FromStr};
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
@@ -11,9 +11,9 @@ use crate::{
 
 #[function_component(Settings)]
 pub fn settings() -> Html {
-    let storage = SettingsStorage::read(LocalStorage::default());
+    let storage = RefCell::new(SettingsStorage::read(LocalStorage::default()));
     let navigator = use_navigator().unwrap();
-    let network = use_state(|| storage.get_network());
+    let network = use_state(|| storage.borrow().get_network());
     let error = use_state(String::new);
     let network_value = *network;
     let error_value = (*error).clone();
@@ -25,9 +25,9 @@ pub fn settings() -> Html {
 
     let onclick_save = {
         Callback::from(move |_| {
-            let mut storage = SettingsStorage::read(LocalStorage::default());
-            storage.set_network(&network_value.to_string());
-            let stored = storage.save();
+            let mut s = storage.borrow_mut();
+            s.set_network(&network_value.to_string());
+            let stored = s.save();
 
             if stored.is_err() {
                 error.set("Unable to save settings".to_string());

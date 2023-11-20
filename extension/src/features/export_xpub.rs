@@ -1,3 +1,5 @@
+use std::cell::RefCell;
+
 use crate::{
     components::text_input::TextInput,
     context::UserContext,
@@ -25,13 +27,14 @@ pub fn export_xpub(props: &Props) -> Html {
         .password
         .clone()
         .unwrap_or_default();
-    let mut storage = UserStorage::read(LocalStorage::default());
-    let wallet = storage.get_wallet_mut(&decoded_wallet_name);
+    let storage = RefCell::new(UserStorage::read(LocalStorage::default()));
     let navigator = use_navigator().unwrap();
     let revealed_xpub = use_state(String::default);
     let master_fingerprint = use_state(String::default);
     let derivation = use_state(|| {
-        wallet
+        storage
+            .borrow_mut()
+            .get_wallet_mut(&decoded_wallet_name)
             .as_ref()
             .map(|w| w.derivation.to_string())
             .unwrap_or_default()
@@ -52,10 +55,9 @@ pub fn export_xpub(props: &Props) -> Html {
     use_effect_with_deps(
         move |_| {
             if !password_value_ue.is_empty() {
-                let mut storage = UserStorage::read(LocalStorage::default());
                 let settings = SettingsStorage::read(LocalStorage::default());
-                let wallet = storage.get_wallet_mut(&decoded_wallet_name);
-                if let Some(w) = wallet {
+                let mut storage = storage.borrow_mut();
+                if let Some(w) = storage.get_wallet_mut(&decoded_wallet_name) {
                     let full_path = if next_derivation_value_ue.is_empty() {
                         w.derivation.to_string()
                     } else {
