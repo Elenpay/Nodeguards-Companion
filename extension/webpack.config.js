@@ -42,4 +42,7 @@ module.exports = {
     port: 9000,
     historyApiFallback: true
   },
+  experiments: {
+    asyncWebAssembly: true
+  }
 };
