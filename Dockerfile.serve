@@ -1,0 +1,11 @@
+# Use a lightweight Node.js image as the base
+FROM node:16-alpine
+
+# Set the working directory
+WORKDIR /app
+
+# Use a volume for the built extension
+VOLUME /app
+
+# Default command to serve the extension
+CMD ["sh", "-c", "yarn run serve"]

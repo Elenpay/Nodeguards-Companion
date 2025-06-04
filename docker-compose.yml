@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  build:
+    image: nodeguards-companion-build
+    build:
+      context: .
+      dockerfile: Dockerfile.build
+    volumes:
+      - .:/app
+
+  serve:
+    image: nodeguards-companion-serve
+    build:
+      context: .
+      dockerfile: Dockerfile.serve
+    depends_on:
+      build:
+        condition: service_completed_successfully
+    volumes:
+      - ./extension:/app
+    ports:
+      - "9000:9000"

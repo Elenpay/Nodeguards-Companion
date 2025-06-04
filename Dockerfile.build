@@ -1,0 +1,35 @@
+# Use a specific Rust version as the base
+FROM rust:1.87.0
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    llvm \
+    clang \
+    libssl-dev \
+    curl \
+    git \
+    npm \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install wasm-pack
+RUN curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+# Install Yarn
+RUN npm install -g yarn
+
+# Set environment variables for LLVM
+ENV PATH="/usr/lib/llvm-12/bin:$PATH"
+ENV AR="llvm-ar"
+
+# Set the working directory
+WORKDIR /app
+
+# Use a volume for the source code
+VOLUME /app
+
+# Install the wasm32-unknown-unknown target
+RUN rustup target add wasm32-unknown-unknown
+
+# Default command to build the extension
+CMD ["sh", "-c", "cd extension && cargo build --target wasm32-unknown-unknown && wasm-pack build && yarn add ./pkg --check-files && yarn install && yarn run build"]
