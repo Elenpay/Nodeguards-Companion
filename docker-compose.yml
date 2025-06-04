@@ -21,3 +21,15 @@ services:
       - ./extension:/app
     ports:
       - "9000:9000"
+
+  upgrade-version:
+    image: nodeguards-companion-upgrade
+    build:
+      context: .
+      dockerfile: Dockerfile.serve
+    depends_on:
+      build:
+        condition: service_completed_successfully
+    volumes:
+      - ./extension:/app
+    command: ["node", "scripts/upgradeVersion.js", "patch"]
