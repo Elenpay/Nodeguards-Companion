@@ -9,32 +9,8 @@ The Signer can be imported into Chrome and Firefox
 ### Prerequirements
 To build the extension locally you need to have the following tools installed:
 
-* [Rust](https://www.rust-lang.org/tools/install)
+* [Docker](https://www.docker.com/)
 * [Just](https://github.com/casey/just)
-* [NodeJS](https://nodejs.org/en)
-* [WASM-pack](https://rustwasm.github.io/wasm-pack/installer/)
- 
-Once you have wasm-pack installed and ready to use, make sure the wasm build target is visible to rustup by running
-```sh
-rustup target list | grep wasm32-unknown-unknown
-```
-If the output is empty, try adding it manually with the following command:
-```
-rustup target add wasm32-unknown-unknown
-```
-\
-Additionally, make sure LLVM is in your system by using your specific package manager.
-
-For example, in mac we would run
-
-```sh
-brew install llvm
-```
-
-And we would add it to the execution PATH with the following command
-```sh
-export PATH="/opt/homebrew/opt/llvm/bin:$PATH"
-```
 
 ### Building the extension
 
@@ -42,12 +18,7 @@ Clone this repository:
 ```sh
 git clone https://github.com/Elenpay/Nodeguard-Signer-Extension.git
 ```
-Navigate to the cloned directory and install the dependencies. The module uses `yarn` so get it installed as well:
-```sh
-npm install -g yarn
-```
 
-Build the extension:
 You need to select the right target (manifest v2, v3) from the justfile according to the usage given to the extension.  
 For example, we will use the following v2 target:
 ```sh
