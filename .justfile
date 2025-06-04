@@ -3,7 +3,7 @@ set fallback := true
 install-1p-mac:
 	brew install --cask 1password/tap/1password-cli
 
-install-depenencies:
+install-dependencies:
 	docker compose up build-ext
 
 build-extension: 
