@@ -19,12 +19,26 @@ Clone this repository:
 git clone https://github.com/Elenpay/Nodeguard-Signer-Extension.git
 ```
 
-You need to select the right target (manifest v2, v3) from the justfile according to the usage given to the extension.  
+To install the dependencies you will have to run:
+```sh
+just install-depenencies
+```
+This will build the necessary docker containers for building the extension.
+
+Next, you need to select the right target (manifest v2, v3) from the justfile according to the usage given to the extension.  
 For example, we will use the following v2 target:
 ```sh
 just build-extension-v2
 ```
-After running this command you should now have a `dist` folder with all the built artifacts, ready to be imported from a browser 
+After running this command you should now have a `dist` folder with all the built artifacts, ready to be imported from a browser
+
+### Serving the extension for development
+
+To serve the extension for development you need to run:
+```sh
+just serve-extension
+```
+This will serve the extension on port 9000, you can change the por in the docker compose file.
 
 ### Importing the extension
 #### Chrome

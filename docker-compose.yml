@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  build:
+  build-ext:
     image: nodeguards-companion-build
     build:
       context: .
@@ -9,7 +9,7 @@ services:
     volumes:
       - .:/app
 
-  serve:
+  serve-ext:
     image: nodeguards-companion-serve
     build:
       context: .
