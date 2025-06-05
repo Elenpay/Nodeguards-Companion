@@ -20,7 +20,7 @@ wasm-bindgen-futures = "0.4"
   path = "../signer"
 
   [dependencies.wasm-bindgen]
-  version = "0.2"
+  version = "0.2.88"
 
   [dependencies.yew]
   version = "0.20"
