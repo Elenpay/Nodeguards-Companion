@@ -11,6 +11,7 @@ To build the extension locally you need to have the following tools installed:
 
 * [Docker](https://www.docker.com/)
 * [Just](https://github.com/casey/just)
+* [1Password CLI](https://developer.1password.com/docs/cli/)
 
 ### Building the extension
 
@@ -58,6 +59,22 @@ the transaction information details such as TxId, Operation type and Amount.
 If you want to sign the operation, you simply need to select a wallet from your previously-configured entries and click on `sign`. You will be asked to enter your password once again and the signer will 
 add the resulting PSBT to the correspondent text area in your browser. If you are using the Signer with NodeGuard, then it will automatically complete the sign operation as well.
 
+
+## 🔏 Signing the Extension
+To sign the extension for Google Chrome, go to the [Dev Console](https://chrome.google.com/webstore/devconsole) and upload it to the chrome web store.
+
+To sign the extension for Firefox, follow these steps:
+
+1. Ensure you have the necessary API credentials stored in 1Password for signing the extension. These credentials should be stored securely under the item named "Firefox Extension Signing Credentials".
+   - **Fields:**
+     - `username`: Your API username.
+     - `credential`: Your API secret key.
+2. Use the `sign-extension` recipe in the `justfile` to sign the extension:
+   ```sh
+   just sign-extension
+   ```
+   This will retrieve credentials and sign the extension.
+4. Verify that the extension has been signed successfully by checking the output logs or the signed artifacts.
 
 
 # 🤝 Contributing
