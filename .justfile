@@ -18,8 +18,11 @@ serve-extension:
 upgrade-version:
 	docker compose up upgrade-version
 
-get-field FIELD:
-	op item get "Firefox Extension Signing Credentials" --fields {{FIELD}}
+get-field FIELD *args='':
+	op item get "Firefox Extension Signing Credentials" --fields {{FIELD}} {{args}}
 
 sign-extension:
-	cd extension/dist && web-ext sign --api-key=$(just get-field username) --api-secret=$(just get-field credential) 
+	#!/bin/bash
+	API_KEY=$(just get-field username)
+	API_SECRET=$(just get-field credential --reveal)
+	docker compose run --rm -e API_KEY="$API_KEY" -e API_SECRET="$API_SECRET" web-ext
