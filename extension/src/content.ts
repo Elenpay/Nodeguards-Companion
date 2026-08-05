@@ -1,22 +1,16 @@
 interface OperationRequestData {
     psbt?: string,
-    request_type?: string,
-    amount?: string;
 }
 
+// Only the PSBT itself is taken from the page. Anything else a page could
+// supply (operation type, amounts, ...) is unverifiable and must never be
+// shown on the approval screen (NGC-01) — the UI derives everything it
+// displays from the PSBT.
 function findPSBT() {
     let psbtField = document.getElementById("psbt-to-sign") as HTMLInputElement | null;
-    let requestTypeField = document.getElementById("request-type");
-    let channelAmountField = document.getElementById("channel-amount");
     let data: OperationRequestData = {};
     if (psbtField?.value) {
         data["psbt"] = psbtField.value;
-    }
-    if (requestTypeField?.innerHTML) {
-        data["request_type"] = requestTypeField.innerHTML;
-    }
-    if (channelAmountField?.innerHTML) {
-        data["amount"] = channelAmountField.innerHTML;
     }
     return data;
 }

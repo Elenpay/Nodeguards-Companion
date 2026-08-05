@@ -1,3 +1,4 @@
+pub mod psbt_summary;
 pub mod radio_button;
 pub mod select;
 pub mod text_input;

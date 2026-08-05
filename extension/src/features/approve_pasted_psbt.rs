@@ -1,5 +1,6 @@
 use crate::{
     components::{
+        psbt_summary::psbt_summary,
         select::{Select, SelectItem},
         textarea::TextArea,
     },
@@ -8,11 +9,11 @@ use crate::{
 };
 use anyhow::{anyhow, Result};
 use signer::{
-    psbt_details::PSBTDetails,
+    psbt_details::ApprovalScreen,
     signer::decode_psbt_and_sign,
     storage::{SettingsStorage, UserStorage},
 };
-use std::{cell::RefCell, rc::Rc, str::FromStr};
+use std::{cell::RefCell, rc::Rc};
 use yew::prelude::*;
 use yew_router::prelude::use_navigator;
 
@@ -30,7 +31,7 @@ pub fn approve_pasted_psbt() -> Html {
     let error = use_state(String::default);
     let selected_wallet_value = (*selected_wallet).clone();
     let error_value = (*error).clone();
-    let disabled = password.is_empty();
+    let password_missing = password.is_empty();
     let psbt = use_state(String::default);
     let psbt_value = (*psbt).clone();
     let signed_psbt = use_state(String::default);
@@ -92,19 +93,18 @@ pub fn approve_pasted_psbt() -> Html {
         .map(|w| SelectItem::new(&w.name, &w.name))
         .collect();
 
-    let parsed_successfully = {
-        let psbt_parsed = PSBTDetails::from_str(&psbt);
-        match psbt_parsed {
-            Ok(psbt) => html! {
-                <div class="display-field">
-                    <strong>{"Tx Id:"}</strong>
-                    <span>{psbt.tx_id}</span>
-                </div>
-            },
-            Err(_) => {
-                html! {}
-            }
-        }
+    // The summary is derived from the PSBT alone, and Sign stays disabled
+    // until the PSBT decodes, so an undecodable PSBT can never be signed
+    // behind an innocuous-looking screen (NGC-01).
+    let network = SettingsStorage::read(LocalStorage::default()).get_network();
+    let approval = ApprovalScreen::for_psbt(&psbt, network);
+    let disabled = password_missing || !approval.allows_signing();
+    let parsed_successfully = match approval {
+        ApprovalScreen::Approve(details) => psbt_summary(&details),
+        ApprovalScreen::Refuse { .. } if psbt.is_empty() => html! {},
+        ApprovalScreen::Refuse { reason } => html! {
+            <div class="error">{reason}</div>
+        },
     };
 
     let signed_successfully = {
