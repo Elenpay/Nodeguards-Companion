@@ -29,8 +29,6 @@ fn main() {
 #[derive(Deserialize, Debug, Default, Clone)]
 pub struct OperationRequestData {
     psbt: Option<String>,
-    request_type: Option<String>,
-    amount: Option<String>,
 }
 
 #[wasm_bindgen]

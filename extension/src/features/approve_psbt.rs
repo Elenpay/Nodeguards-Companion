@@ -1,5 +1,8 @@
 use crate::{
-    components::select::{Select, SelectItem},
+    components::{
+        psbt_summary::psbt_summary,
+        select::{Select, SelectItem},
+    },
     context::UserContext,
     paste_psbt,
     switch::Route,
@@ -8,11 +11,11 @@ use crate::{
 };
 use anyhow::anyhow;
 use signer::{
-    psbt_details::PSBTDetails,
+    psbt_details::ApprovalScreen,
     signer::decode_psbt_and_sign,
     storage::{SettingsStorage, UserStorage},
 };
-use std::{cell::RefCell, rc::Rc, str::FromStr};
+use std::{cell::RefCell, rc::Rc};
 use web_sys::window;
 use yew::prelude::*;
 use yew_router::prelude::{use_location, use_navigator};
@@ -48,8 +51,29 @@ pub fn approve_psbt() -> Html {
         };
     }
 
+    let psbt = operation_data.psbt.clone().unwrap();
+
+    // Everything shown to the user is derived from the PSBT itself. If it
+    // cannot be decoded there is nothing trustworthy to display, so refuse
+    // to offer a Sign button at all (NGC-01).
+    let network = SettingsStorage::read(LocalStorage::default()).get_network();
+    let psbt_details = match ApprovalScreen::for_psbt(&psbt, network) {
+        ApprovalScreen::Approve(details) => details,
+        ApprovalScreen::Refuse { reason } => {
+            let onclick_goback = Callback::from(move |_: MouseEvent| navigator.back());
+            return html! {
+                <>
+                    <h class="title">{"Approve PSBT"}</h>
+                    <div class="error">{reason}</div>
+                    <div class="button-bar">
+                        <button class="cancel" onclick={onclick_goback}>{"Go back"}</button>
+                    </div>
+                </>
+            };
+        }
+    };
+
     let onclick_save = {
-        let psbt = operation_data.psbt.clone().unwrap();
         let navigator = navigator.clone();
         let selected_wallet_value = selected_wallet_value.clone();
         let storage = storage.clone();
@@ -89,36 +113,16 @@ pub fn approve_psbt() -> Html {
 
     let onclick_goback = { Callback::from(move |_: MouseEvent| navigator.back()) };
 
-    let psbt = operation_data.psbt.clone().unwrap();
     let items: Vec<SelectItem> = storage
         .borrow()
         .wallets
         .iter()
         .map(|w| SelectItem::new(&w.name, &w.name))
         .collect();
-    let psbt = PSBTDetails::from_str(&psbt).unwrap_or_default();
-    let data = operation_data.clone();
     html! {
         <>
             <h class="title">{"Approve PSBT"}</h>
-            <div class="display-field">
-                <strong>{"Tx Id:"}</strong>
-                <span>{psbt.tx_id}</span>
-            </div>
-            <div class="display-field">
-                <strong>{"Operation Type:"}</strong>
-                <span>{data.request_type.clone()}</span>
-            </div>
-            <div class="display-field">
-                <strong>{"Amount:"}</strong>
-                <span>{data.amount}</span>
-                <span>{"BTC"}</span>
-            </div>
-            <div class="display-field">
-                <strong>{"Fee:"}</strong>
-                <span>{psbt.fee}</span>
-                <span>{"SATS"}</span>
-            </div>
+            {psbt_summary(&psbt_details)}
             <Select {onchange} items={items} default={selected_wallet_value}/>
             <div class="error">{error_value}</div>
             <div class="button-bar">
